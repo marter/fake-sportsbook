@@ -90,7 +90,8 @@ dc exec db psql -U sportsbook fake_sportsbook       # database shell
 
 ## Adding volunteer-scheduler later
 
-1. Give its prod compose file the same shape: join the external `web` network with aliases
+1. Give its prod compose file the same shape: a unique top-level `name:` (e.g.
+   `volunteer-scheduler`), join the external `web` network with aliases
    `volunteer-backend` / `volunteer-frontend`, and publish no ports.
 2. Uncomment the `volunteer.martinteran.me` block in `deploy/caddy/Caddyfile`.
 3. Add a `volunteer` A record pointing to the same static IP.
