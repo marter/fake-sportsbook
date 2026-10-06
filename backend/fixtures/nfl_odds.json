@@ -1,0 +1,506 @@
+[
+  {
+    "id": "fixture00000000000000000000000000",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-10-11T17:00:00Z",
+    "home_team": "Buffalo Bills",
+    "away_team": "Miami Dolphins",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-10-06T15:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Miami Dolphins",
+                "price": 176
+              },
+              {
+                "name": "Buffalo Bills",
+                "price": -210
+              }
+            ]
+          },
+          {
+            "key": "spreads",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Miami Dolphins",
+                "price": -110,
+                "point": 4.5
+              },
+              {
+                "name": "Buffalo Bills",
+                "price": -110,
+                "point": -4.5
+              }
+            ]
+          },
+          {
+            "key": "totals",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Over",
+                "price": -110,
+                "point": 47.5
+              },
+              {
+                "name": "Under",
+                "price": -110,
+                "point": 47.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture01000000000000000000000000",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-10-11T17:00:00Z",
+    "home_team": "Detroit Lions",
+    "away_team": "Green Bay Packers",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-10-06T15:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Green Bay Packers",
+                "price": 130
+              },
+              {
+                "name": "Detroit Lions",
+                "price": -155
+              }
+            ]
+          },
+          {
+            "key": "spreads",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Green Bay Packers",
+                "price": -112,
+                "point": 3.0
+              },
+              {
+                "name": "Detroit Lions",
+                "price": -108,
+                "point": -3.0
+              }
+            ]
+          },
+          {
+            "key": "totals",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Over",
+                "price": -110,
+                "point": 50.5
+              },
+              {
+                "name": "Under",
+                "price": -110,
+                "point": 50.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture02000000000000000000000000",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-10-11T17:00:00Z",
+    "home_team": "Baltimore Ravens",
+    "away_team": "Cleveland Browns",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-10-06T15:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Cleveland Browns",
+                "price": 300
+              },
+              {
+                "name": "Baltimore Ravens",
+                "price": -380
+              }
+            ]
+          },
+          {
+            "key": "spreads",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Cleveland Browns",
+                "price": -110,
+                "point": 8.5
+              },
+              {
+                "name": "Baltimore Ravens",
+                "price": -110,
+                "point": -8.5
+              }
+            ]
+          },
+          {
+            "key": "totals",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Over",
+                "price": -110,
+                "point": 43.5
+              },
+              {
+                "name": "Under",
+                "price": -110,
+                "point": 43.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture03000000000000000000000000",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-10-11T20:25:00Z",
+    "home_team": "San Francisco 49ers",
+    "away_team": "Seattle Seahawks",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-10-06T15:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Seattle Seahawks",
+                "price": 114
+              },
+              {
+                "name": "San Francisco 49ers",
+                "price": -135
+              }
+            ]
+          },
+          {
+            "key": "spreads",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Seattle Seahawks",
+                "price": -112,
+                "point": 2.5
+              },
+              {
+                "name": "San Francisco 49ers",
+                "price": -108,
+                "point": -2.5
+              }
+            ]
+          },
+          {
+            "key": "totals",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Over",
+                "price": -110,
+                "point": 45.5
+              },
+              {
+                "name": "Under",
+                "price": -110,
+                "point": 45.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture04000000000000000000000000",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-10-11T20:25:00Z",
+    "home_team": "Los Angeles Rams",
+    "away_team": "Arizona Cardinals",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-10-06T15:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Arizona Cardinals",
+                "price": -125
+              },
+              {
+                "name": "Los Angeles Rams",
+                "price": 105
+              }
+            ]
+          },
+          {
+            "key": "spreads",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Arizona Cardinals",
+                "price": -110,
+                "point": -1.5
+              },
+              {
+                "name": "Los Angeles Rams",
+                "price": -110,
+                "point": 1.5
+              }
+            ]
+          },
+          {
+            "key": "totals",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Over",
+                "price": -110,
+                "point": 48.0
+              },
+              {
+                "name": "Under",
+                "price": -110,
+                "point": 48.0
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture05000000000000000000000000",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-10-12T00:20:00Z",
+    "home_team": "Philadelphia Eagles",
+    "away_team": "Dallas Cowboys",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-10-06T15:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Dallas Cowboys",
+                "price": 146
+              },
+              {
+                "name": "Philadelphia Eagles",
+                "price": -175
+              }
+            ]
+          },
+          {
+            "key": "spreads",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Dallas Cowboys",
+                "price": -112,
+                "point": 3.5
+              },
+              {
+                "name": "Philadelphia Eagles",
+                "price": -108,
+                "point": -3.5
+              }
+            ]
+          },
+          {
+            "key": "totals",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Over",
+                "price": -110,
+                "point": 46.5
+              },
+              {
+                "name": "Under",
+                "price": -110,
+                "point": 46.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture06000000000000000000000000",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-10-13T00:15:00Z",
+    "home_team": "Kansas City Chiefs",
+    "away_team": "Denver Broncos",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-10-06T15:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Denver Broncos",
+                "price": 198
+              },
+              {
+                "name": "Kansas City Chiefs",
+                "price": -240
+              }
+            ]
+          },
+          {
+            "key": "spreads",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Denver Broncos",
+                "price": -110,
+                "point": 6.0
+              },
+              {
+                "name": "Kansas City Chiefs",
+                "price": -110,
+                "point": -6.0
+              }
+            ]
+          },
+          {
+            "key": "totals",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Over",
+                "price": -110,
+                "point": 44.5
+              },
+              {
+                "name": "Under",
+                "price": -110,
+                "point": 44.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture07000000000000000000000000",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-10-15T00:15:00Z",
+    "home_team": "Cincinnati Bengals",
+    "away_team": "Pittsburgh Steelers",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-10-06T15:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Pittsburgh Steelers",
+                "price": 100
+              },
+              {
+                "name": "Cincinnati Bengals",
+                "price": -120
+              }
+            ]
+          },
+          {
+            "key": "spreads",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Pittsburgh Steelers",
+                "price": -112,
+                "point": 1.5
+              },
+              {
+                "name": "Cincinnati Bengals",
+                "price": -108,
+                "point": -1.5
+              }
+            ]
+          },
+          {
+            "key": "totals",
+            "last_update": "2026-10-06T15:00:00Z",
+            "outcomes": [
+              {
+                "name": "Over",
+                "price": -110,
+                "point": 42.5
+              },
+              {
+                "name": "Under",
+                "price": -110,
+                "point": 42.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

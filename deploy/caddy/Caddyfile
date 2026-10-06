@@ -1,0 +1,29 @@
+# Shared reverse proxy for every app on this server. Caddy gets and renews HTTPS
+# certificates automatically once DNS points at the server.
+#
+# Each app joins the external "web" Docker network with unique aliases
+# (e.g. sportsbook-backend), so Caddy can reach it by name.
+
+{$SPORTSBOOK_HOST:sportsbook.martinteran.me} {
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy sportsbook-backend:8000
+	}
+
+	handle {
+		reverse_proxy sportsbook-frontend:80
+	}
+}
+
+# Add volunteer-scheduler later, the same way:
+#
+# volunteer.martinteran.me {
+# 	encode zstd gzip
+# 	handle /api/* {
+# 		reverse_proxy volunteer-backend:8000
+# 	}
+# 	handle {
+# 		reverse_proxy volunteer-frontend:80
+# 	}
+# }

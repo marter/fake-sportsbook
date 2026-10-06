@@ -1,0 +1,9 @@
+{
+  "name": "Fake Sportsbook",
+  "short_name": "Sportsbook",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#16171d",
+  "theme_color": "#15803d",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

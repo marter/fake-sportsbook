@@ -1,0 +1,5 @@
+.DS_Store
+*.log
+
+# Production secrets live only on the server
+deploy/.env.prod

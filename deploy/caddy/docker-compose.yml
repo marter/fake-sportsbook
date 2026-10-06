@@ -1,0 +1,31 @@
+# Runs once per server, from /srv/caddy. Owns ports 80/443 for every app.
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      # Only overridden for local testing; the Caddyfile defaults to the real hostname.
+      SPORTSBOOK_HOST: ${SPORTSBOOK_HOST:-sportsbook.martinteran.me}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  web:
+    external: true
