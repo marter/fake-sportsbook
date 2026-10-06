@@ -1,4 +1,5 @@
 # Runs once per server, from /srv/caddy. Owns ports 80/443 for every app.
+name: caddy
 services:
   caddy:
     image: caddy:2-alpine

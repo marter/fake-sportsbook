@@ -3,6 +3,10 @@
 #
 #   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod up -d --build
 
+# Explicit project name: otherwise Compose uses the folder name ("deploy"), which would
+# collide with other apps on this server that use the same layout.
+name: fake-sportsbook
+
 x-logging: &logging
   driver: json-file
   options:
