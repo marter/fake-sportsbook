@@ -5,8 +5,8 @@ Runs as its own container (see deploy/docker-compose.prod.yml):
     python -m app.worker
 
 Every `worker_interval_seconds` (15 min) it runs the same cached checks the API runs on page
-load, so it only spends API credits when they're due: odds once a day, and scores only while
-an open bet is waiting on a game that should be over.
+load, so it only spends API credits when they're due: odds once a day per in-season sport, and
+scores only for a sport with an open bet waiting on a game that should be over.
 """
 
 import logging
@@ -22,8 +22,9 @@ logger = logging.getLogger("app.worker")
 
 def run_once() -> None:
     """One cycle. Each step gets its own session so a failure in one doesn't skip the other."""
-    with SessionLocal() as db:
-        odds.ensure_fresh_odds(db)
+    for sport in odds.enabled_sports():
+        with SessionLocal() as db:
+            odds.ensure_fresh_odds(db, sport)  # skips out-of-season sports and fresh caches
     with SessionLocal() as db:
         settled = settlement.settle_if_due(db)
         if settled:

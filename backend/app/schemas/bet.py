@@ -23,6 +23,7 @@ class BetGame(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    sport: str
     home_team: str
     away_team: str
     commence_time: datetime

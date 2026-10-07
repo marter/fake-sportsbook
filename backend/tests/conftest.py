@@ -77,3 +77,16 @@ def email_settings(monkeypatch: pytest.MonkeyPatch):
 @pytest.fixture
 def verification_on(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(get_settings(), "email_verification_required", True)
+
+
+@pytest.fixture(autouse=True)
+def in_season_sports(monkeypatch: pytest.MonkeyPatch):
+    """Never call The Odds API's /sports from tests: treat every enabled sport as in season
+    when a test sets an API key, and reset the module's cache between tests."""
+    from app.services import odds
+    from app.sports import SPORTS
+
+    monkeypatch.setattr(odds, "_active_cache", None)
+    monkeypatch.setattr(
+        odds, "fetch_active_sport_keys", lambda: frozenset(s.api_key for s in SPORTS)
+    )

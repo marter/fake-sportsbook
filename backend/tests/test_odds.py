@@ -10,6 +10,9 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.models.game import Game, OddsFetch, OddsLine
 from app.services import odds
+from app.sports import BY_SLUG
+
+NFL = BY_SLUG["nfl"]
 
 
 def count(db: Session, model: type) -> int:
@@ -62,10 +65,10 @@ def test_api_mode_fetches_once_and_updates_prices(
     client: TestClient, db: Session, auth_headers: dict[str, str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(get_settings(), "odds_api_key", "test-key")
-    events = odds.load_fixture_events(datetime.now(UTC))
+    events = odds.load_fixture_events(NFL, datetime.now(UTC))
     calls: list[int] = []
 
-    def fake_fetch():
+    def fake_fetch(sport):
         calls.append(1)
         return events, 497
 
@@ -78,7 +81,7 @@ def test_api_mode_fetches_once_and_updates_prices(
 
     # A forced refresh with a moved line updates the existing row in place.
     events[0]["bookmakers"][0]["markets"][0]["outcomes"][0]["price"] = 999
-    odds.ensure_fresh_odds(db, force=True)
+    odds.ensure_fresh_odds(db, NFL, force=True)
     assert len(calls) == 2
     assert count(db, OddsLine) == 48
     assert db.scalar(select(func.max(OddsLine.price_american))) == 999
@@ -93,7 +96,7 @@ def test_api_failure_serves_stale_cache(
 
     monkeypatch.setattr(get_settings(), "odds_api_key", "test-key")
 
-    def failing_fetch():
+    def failing_fetch(sport):
         raise httpx.ConnectError("down")
 
     monkeypatch.setattr(odds, "fetch_events_from_api", failing_fetch)
@@ -119,11 +122,11 @@ def test_started_games_are_hidden(
 
 @pytest.mark.parametrize("days_later", [0, 3, 9, 40])
 def test_fixture_keeps_real_weekdays(days_later: int) -> None:
-    fixture = json.loads(odds.FIXTURE_PATH.read_text())
+    fixture = json.loads(NFL.fixture_path.read_text())
     originals = [odds._parse_time(e["commence_time"]) for e in fixture]
     now = min(originals) - timedelta(days=2) + timedelta(days=days_later)
 
-    shifted = [odds._parse_time(e["commence_time"]) for e in odds.load_fixture_events(now)]
+    shifted = [odds._parse_time(e["commence_time"]) for e in odds.load_fixture_events(NFL, now)]
     for before, after in zip(originals, shifted, strict=True):
         assert (after - before) % timedelta(weeks=1) == timedelta(0)
     assert min(shifted) > now - timedelta(weeks=1)

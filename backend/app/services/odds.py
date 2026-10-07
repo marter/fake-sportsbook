@@ -1,14 +1,14 @@
-"""Fetches NFL odds from The Odds API and caches them in Postgres.
+"""Fetches odds from The Odds API and caches them in Postgres, per sport.
 
-There's no background worker: `ensure_fresh_odds` runs when someone loads the games list and
-only calls the API when the newest cached fetch is older than `odds_cache_hours`.
+`ensure_fresh_odds(db, sport)` runs when someone opens that sport's tab and from the background
+worker, and only calls the API when the newest cached fetch is older than `odds_cache_hours`.
+Out-of-season sports (per The Odds API's free /sports list) aren't fetched at all.
 """
 
 import json
 import logging
 import math
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 from typing import Any
 
 import httpx
@@ -18,18 +18,52 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.models.game import Game, Market, OddsFetch, OddsLine
+from app.sports import BY_SLUG, SPORTS, Sport
 
 logger = logging.getLogger(__name__)
 
-FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "nfl_odds.json"
 MARKETS = [m.value for m in Market]
+ACTIVE_CACHE_TTL = timedelta(hours=6)
+_active_cache: tuple[datetime, frozenset[str]] | None = None
 
 
-def fetch_events_from_api() -> tuple[list[dict[str, Any]], int | None]:
+def enabled_sports() -> list[Sport]:
+    return [s for s in SPORTS if s.slug in get_settings().enabled_sports]
+
+
+def fetch_active_sport_keys() -> frozenset[str]:
+    """The Odds API keys of sports currently in season. This endpoint costs no credits."""
+    settings = get_settings()
+    response = httpx.get(
+        f"{settings.odds_api_base_url}/sports",
+        params={"apiKey": settings.odds_api_key},
+        timeout=15,
+    )
+    response.raise_for_status()
+    return frozenset(s["key"] for s in response.json() if s.get("active"))
+
+
+def is_active(sport: Sport) -> bool:
+    """In season? Without an API key, a sport is "in season" if it has a sample fixture file."""
+    global _active_cache
+    if not get_settings().odds_api_key:
+        return sport.fixture_path.exists()
+    now = datetime.now(UTC)
+    if _active_cache is None or now - _active_cache[0] > ACTIVE_CACHE_TTL:
+        try:
+            _active_cache = (now, fetch_active_sport_keys())
+        except httpx.HTTPError:
+            logger.exception("Couldn't check which sports are in season")
+            if _active_cache is None:
+                return True  # assume in season rather than hide a league
+    return sport.api_key in _active_cache[1]
+
+
+def fetch_events_from_api(sport: Sport) -> tuple[list[dict[str, Any]], int | None]:
     """Returns The Odds API's events and the remaining-request count from its headers."""
     settings = get_settings()
     response = httpx.get(
-        f"{settings.odds_api_base_url}/sports/{settings.odds_sport_key}/odds",
+        f"{settings.odds_api_base_url}/sports/{sport.api_key}/odds",
         params={
             "apiKey": settings.odds_api_key,
             "bookmakers": settings.odds_bookmaker,
@@ -44,14 +78,14 @@ def fetch_events_from_api() -> tuple[list[dict[str, Any]], int | None]:
     return response.json(), int(float(remaining)) if remaining else None
 
 
-def fetch_scores_from_api() -> tuple[list[dict[str, Any]], int | None]:
+def fetch_scores_from_api(sport: Sport) -> tuple[list[dict[str, Any]], int | None]:
     """Returns recent and upcoming games with scores (completed ones from the last 3 days).
 
     Costs 2 credits per call because of `daysFrom`.
     """
     settings = get_settings()
     response = httpx.get(
-        f"{settings.odds_api_base_url}/sports/{settings.odds_sport_key}/scores",
+        f"{settings.odds_api_base_url}/sports/{sport.api_key}/scores",
         params={"apiKey": settings.odds_api_key, "daysFrom": 3, "dateFormat": "iso"},
         timeout=15,
     )
@@ -60,13 +94,15 @@ def fetch_scores_from_api() -> tuple[list[dict[str, Any]], int | None]:
     return response.json(), int(float(remaining)) if remaining else None
 
 
-def load_fixture_events(now: datetime) -> list[dict[str, Any]]:
+def load_fixture_events(sport: Sport, now: datetime) -> list[dict[str, Any]]:
     """Loads saved sample events, moved forward by whole weeks so they're upcoming.
 
     Shifting by whole weeks keeps each game on its real weekday and kickoff time
     (Sunday 1pm stays Sunday 1pm, Thursday night stays Thursday night).
     """
-    events: list[dict[str, Any]] = json.loads(FIXTURE_PATH.read_text())
+    if not sport.fixture_path.exists():
+        return []
+    events: list[dict[str, Any]] = json.loads(sport.fixture_path.read_text())
     earliest = min(_parse_time(e["commence_time"]) for e in events)
     week = timedelta(weeks=1)
     weeks_behind = max(0, math.ceil((now - earliest) / week))
@@ -139,29 +175,34 @@ def latest_fetch(db: Session, sport_key: str, kind: str = "odds") -> OddsFetch |
     ).first()
 
 
-def ensure_fresh_odds(db: Session, *, force: bool = False) -> OddsFetch | None:
-    """Refetches odds if the cache is stale (or `force`), then returns the latest fetch.
+def ensure_fresh_odds(db: Session, sport: Sport, *, force: bool = False) -> OddsFetch | None:
+    """Refetches the sport's odds if the cache is stale (or `force`) and the sport is in season,
+    then returns its latest fetch.
 
-    A Postgres advisory lock makes concurrent requests wait for one fetch instead of each
-    spending API credits.
+    A Postgres advisory lock per sport makes concurrent requests wait for one fetch instead of
+    each spending API credits.
     """
     settings = get_settings()
     now = datetime.now(UTC)
     ttl = timedelta(hours=settings.odds_cache_hours)
 
-    cached = latest_fetch(db, settings.odds_sport_key)
+    cached = latest_fetch(db, sport.api_key)
     if not force and cached is not None and now - cached.fetched_at < ttl:
         return cached
+    if not force and not is_active(sport):
+        return cached
 
-    db.execute(text("SELECT pg_advisory_xact_lock(hashtext('odds_fetch'))"))
-    cached = latest_fetch(db, settings.odds_sport_key)  # another request may have just fetched
+    db.execute(
+        text("SELECT pg_advisory_xact_lock(hashtext(:key))"), {"key": f"odds_fetch:{sport.slug}"}
+    )
+    cached = latest_fetch(db, sport.api_key)  # another request may have just fetched
     if not force and cached is not None and now - cached.fetched_at < ttl:
         db.commit()
         return cached
 
     if settings.odds_api_key:
         try:
-            events, remaining = fetch_events_from_api()
+            events, remaining = fetch_events_from_api(sport)
         except httpx.HTTPError:
             # Serve stale odds rather than break the games list.
             logger.exception("The Odds API request failed; serving cached odds")
@@ -169,12 +210,12 @@ def ensure_fresh_odds(db: Session, *, force: bool = False) -> OddsFetch | None:
             return cached
         source = "api"
     else:
-        events, remaining = load_fixture_events(now), None
+        events, remaining = load_fixture_events(sport, now), None
         source = "fixture"
 
     upsert_events(db, events, settings.odds_bookmaker)
     fetch = OddsFetch(
-        sport_key=settings.odds_sport_key,
+        sport_key=sport.api_key,
         fetched_at=now,
         source=source,
         event_count=len(events),
@@ -190,14 +231,17 @@ def _parse_time(value: str) -> datetime:
 
 
 if __name__ == "__main__":
-    # Force a refresh now: `uv run python -m app.services.odds`
-    # (or `docker compose exec backend python -m app.services.odds`).
+    # Force a refresh now: `uv run python -m app.services.odds [nfl nba ...]` (default: every
+    # in-season sport). In production: `docker compose exec backend python -m app.services.odds`.
+    import sys
+
     from app.core.db import SessionLocal
 
+    chosen = [BY_SLUG[s] for s in sys.argv[1:]] or [s for s in enabled_sports() if is_active(s)]
     with SessionLocal() as session:
-        result = ensure_fresh_odds(session, force=True)
-        assert result is not None
-        print(
-            f"Loaded {result.event_count} games from {result.source}"
-            + (f"; {result.requests_remaining} API credits left" if result.source == "api" else "")
-        )
+        for sport in chosen:
+            result = ensure_fresh_odds(session, sport, force=True)
+            assert result is not None
+            left = result.requests_remaining
+            credits = f"; {left} credits left" if result.source == "api" else ""
+            print(f"{sport.name}: {result.event_count} games from {result.source}{credits}")
