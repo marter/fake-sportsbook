@@ -36,3 +36,12 @@ export async function fetchMe(): Promise<Me> {
   const { data } = await apiClient.get<Me>("/api/auth/me");
   return data;
 }
+
+export async function verifyEmail(token: string): Promise<Me> {
+  const { data } = await apiClient.post<Me>("/api/auth/verify-email", { token });
+  return data;
+}
+
+export async function resendVerification(): Promise<void> {
+  await apiClient.post("/api/auth/resend-verification");
+}

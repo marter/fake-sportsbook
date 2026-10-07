@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import { formatMoney } from "./format";
+import { VerifyBanner } from "./VerifyBanner";
 
 const TABS = [
   { to: "/", label: "Games", icon: "M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18M12 3a9 9 0 1 1 0 18a9 9 0 0 1 0-18" },
@@ -23,6 +24,7 @@ export function Layout() {
         )}
       </header>
       <main className="page">
+        <VerifyBanner />
         <Outlet />
       </main>
       <nav className="tabbar">

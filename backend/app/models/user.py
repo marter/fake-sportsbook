@@ -1,4 +1,6 @@
-from sqlalchemy import BigInteger, String
+from datetime import datetime
+
+from sqlalchemy import BigInteger, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
@@ -18,3 +20,12 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     # Play money, always in integer cents. Only change this inside a transaction that holds a
     # row lock (SELECT ... FOR UPDATE) and writes a matching ledger entry (phase 3).
     balance_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+    # Null until the user clicks the link in their verification email.
+    email_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    @property
+    def email_verified(self) -> bool:
+        return self.email_verified_at is not None

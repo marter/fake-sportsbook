@@ -33,3 +33,12 @@ export async function voidBet(betId: string, note?: string): Promise<Bet> {
   const { data } = await apiClient.post<Bet>(`/api/admin/bets/${betId}/void`, { note });
   return data;
 }
+
+export async function markVerified(userId: string): Promise<AdminUser> {
+  const { data } = await apiClient.post<AdminUser>(`/api/admin/users/${userId}/verify`);
+  return data;
+}
+
+export async function deleteUnverifiedUser(userId: string): Promise<void> {
+  await apiClient.delete(`/api/admin/users/${userId}`);
+}

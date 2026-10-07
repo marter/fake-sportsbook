@@ -19,3 +19,7 @@ class RegistrationStatus(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str = Field(min_length=10, max_length=200)

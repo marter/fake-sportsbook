@@ -59,3 +59,21 @@ def auth_headers(client: TestClient) -> dict[str, str]:
         json={"email": "fixture@example.com", "password": "hunter22!", "display_name": "Fix"},
     )
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
+
+
+@pytest.fixture(autouse=True)
+def email_settings(monkeypatch: pytest.MonkeyPatch):
+    """No real email in tests, and verification off unless a test opts in (`verification_on`)."""
+    from app.services import email
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "email_backend", "memory")
+    monkeypatch.setattr(settings, "email_verification_required", False)
+    email.outbox.clear()
+    yield
+    email.outbox.clear()
+
+
+@pytest.fixture
+def verification_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(get_settings(), "email_verification_required", True)

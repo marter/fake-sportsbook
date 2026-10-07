@@ -20,6 +20,16 @@ class Settings(BaseSettings):
     # Registration closes once this many accounts exist. Keeps the public site to friends.
     max_users: int = 5
 
+    # Email verification. New accounts must verify before betting; unverified accounts
+    # are deleted after `unverified_account_ttl_hours` so they don't hold a sign-up slot.
+    email_verification_required: bool = True
+    email_backend: str = "console"  # "console" (logs the email), "resend", or "memory" (tests)
+    resend_api_key: str = ""
+    email_from: str = "Fake Sportsbook <no-reply@martinteran.me>"
+    app_base_url: str = "http://localhost:5174"  # used to build links in emails
+    verification_token_ttl_hours: int = 24
+    unverified_account_ttl_hours: int = 48
+
     # The Odds API. With no key set, odds load from fixtures/nfl_odds.json instead.
     odds_api_key: str = ""
     odds_api_base_url: str = "https://api.the-odds-api.com/v4"

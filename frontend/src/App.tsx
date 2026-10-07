@@ -9,12 +9,14 @@ import { LeaderboardPage } from "./pages/LeaderboardPage";
 import { AccountPage } from "./pages/AccountPage";
 import { AdminPage } from "./pages/AdminPage";
 import { UserBetsPage } from "./pages/UserBetsPage";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/" element={<GamesPage />} />
