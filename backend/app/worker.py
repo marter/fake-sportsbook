@@ -33,6 +33,10 @@ def run_once() -> None:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    # httpx logs every request URL at INFO, and The Odds API takes its key as a query
+    # parameter, so keep HTTP client logs to warnings and up.
+    for noisy in ("httpx", "httpcore"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     interval = get_settings().worker_interval_seconds
     stop = threading.Event()
     for sig in (signal.SIGTERM, signal.SIGINT):
