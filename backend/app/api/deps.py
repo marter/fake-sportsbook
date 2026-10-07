@@ -28,3 +28,9 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None or not user.is_active:
         raise credentials_error
     return user
+
+
+def require_admin(current: User = Depends(get_current_user)) -> User:
+    if not current.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admins only")
+    return current

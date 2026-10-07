@@ -6,20 +6,41 @@ function findLine(game: Game, market: Market, outcome: string): OddsLine | undef
   return game.odds_lines.find((l) => l.market === market && l.outcome === outcome);
 }
 
-function OddsCell({ line, label }: { line: OddsLine | undefined; label?: string }) {
+interface CellProps {
+  line: OddsLine | undefined;
+  label?: string;
+  selectedLineId: string | null;
+  onSelect: (line: OddsLine) => void;
+}
+
+function OddsCell({ line, label, selectedLineId, onSelect }: CellProps) {
   if (!line) return <div className="odds-cell odds-cell--empty">–</div>;
   return (
-    <div className="odds-cell">
+    <button
+      type="button"
+      className="odds-cell"
+      aria-pressed={line.id === selectedLineId}
+      onClick={() => onSelect(line)}
+    >
       {label && <span className="odds-point">{label}</span>}
       <span className="odds-price">{formatAmericanOdds(line.price_american)}</span>
-    </div>
+    </button>
   );
 }
 
-function TeamRow({ game, team, totalSide }: { game: Game; team: string; totalSide: "Over" | "Under" }) {
+interface RowProps {
+  game: Game;
+  team: string;
+  totalSide: "Over" | "Under";
+  selectedLineId: string | null;
+  onSelect: (line: OddsLine) => void;
+}
+
+function TeamRow({ game, team, totalSide, selectedLineId, onSelect }: RowProps) {
   const [city, nickname] = splitTeamName(team);
   const spread = findLine(game, "spreads", team);
   const total = findLine(game, "totals", totalSide);
+  const cell = { selectedLineId, onSelect };
 
   return (
     <div className="game-row">
@@ -27,25 +48,49 @@ function TeamRow({ game, team, totalSide }: { game: Game; team: string; totalSid
         <span className="team-city">{city}</span>
         <span className="team-nickname">{nickname}</span>
       </div>
-      <OddsCell line={spread} label={spread?.point != null ? formatPoint(spread.point) : undefined} />
+      <OddsCell
+        line={spread}
+        label={spread?.point != null ? formatPoint(spread.point) : undefined}
+        {...cell}
+      />
       <OddsCell
         line={total}
         label={total?.point != null ? `${totalSide[0]} ${total.point}` : undefined}
+        {...cell}
       />
-      <OddsCell line={findLine(game, "h2h", team)} />
+      <OddsCell line={findLine(game, "h2h", team)} {...cell} />
     </div>
   );
 }
 
-export function GameCard({ game }: { game: Game }) {
+interface GameCardProps {
+  game: Game;
+  selectedLineId: string | null;
+  onSelect: (game: Game, line: OddsLine) => void;
+}
+
+export function GameCard({ game, selectedLineId, onSelect }: GameCardProps) {
+  const select = (line: OddsLine) => onSelect(game, line);
   return (
     <article className="game-card">
       <div className="game-row game-row--header">
         <span className="game-kickoff">{formatKickoff(game.commence_time)}</span>
         <MarketHeaders />
       </div>
-      <TeamRow game={game} team={game.away_team} totalSide="Over" />
-      <TeamRow game={game} team={game.home_team} totalSide="Under" />
+      <TeamRow
+        game={game}
+        team={game.away_team}
+        totalSide="Over"
+        selectedLineId={selectedLineId}
+        onSelect={select}
+      />
+      <TeamRow
+        game={game}
+        team={game.home_team}
+        totalSide="Under"
+        selectedLineId={selectedLineId}
+        onSelect={select}
+      />
     </article>
   );
 }

@@ -6,9 +6,11 @@ from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.security import create_access_token, hash_password, verify_password
+from app.models.ledger import LedgerKind
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, RegistrationStatus, TokenResponse
 from app.schemas.user import UserRead
+from app.services import wallet
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -40,9 +42,11 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
         email=email,
         hashed_password=hash_password(payload.password),
         display_name=payload.display_name.strip(),
-        balance_cents=get_settings().starting_balance_cents,
+        balance_cents=0,
     )
     db.add(user)
+    db.flush()
+    wallet.apply(db, user, get_settings().starting_balance_cents, LedgerKind.SIGNUP_BONUS)
     db.commit()
 
     return TokenResponse(access_token=create_access_token(subject=str(user.id)))

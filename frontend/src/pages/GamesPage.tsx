@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchGames } from "../api/games";
 import { extractErrorMessage } from "../api/client";
 import { GameCard } from "../GameCard";
+import { BetSlip } from "../BetSlip";
 import { formatDayHeading, formatTimeAgo } from "../format";
-import type { Game } from "../types";
+import type { Game, Selection } from "../types";
 
 function groupByDay(games: Game[]): [string, Game[]][] {
   const groups = new Map<string, Game[]>();
@@ -20,6 +22,7 @@ export function GamesPage() {
     queryFn: fetchGames,
     staleTime: 5 * 60_000,
   });
+  const [selection, setSelection] = useState<Selection | null>(null);
 
   return (
     <>
@@ -37,7 +40,12 @@ export function GamesPage() {
           <section key={day} className="game-day">
             <h2>{day}</h2>
             {games.map((game) => (
-              <GameCard key={game.id} game={game} />
+              <GameCard
+                key={game.id}
+                game={game}
+                selectedLineId={selection?.line.id ?? null}
+                onSelect={(g, line) => setSelection({ game: g, line })}
+              />
             ))}
           </section>
         ))}
@@ -45,6 +53,13 @@ export function GamesPage() {
         <p className="hint odds-footnote">
           Odds updated {formatTimeAgo(data.odds_updated_at)}. They refresh weekly.
         </p>
+      )}
+      {selection && (
+        <BetSlip
+          key={selection.line.id}
+          selection={selection}
+          onClose={() => setSelection(null)}
+        />
       )}
     </>
   );
