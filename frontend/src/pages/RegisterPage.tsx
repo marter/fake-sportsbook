@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { extractErrorMessage } from "../api/client";
+import { fetchRegistrationOpen } from "../api/auth";
 
 export function RegisterPage() {
   const { me, register } = useAuth();
@@ -13,7 +15,24 @@ export function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { data: registrationOpen } = useQuery({
+    queryKey: ["registration-open"],
+    queryFn: fetchRegistrationOpen,
+  });
+
   if (me) return <Navigate to="/" replace />;
+
+  if (registrationOpen === false) {
+    return (
+      <div className="auth-card">
+        <h1>Sign-ups are closed</h1>
+        <p className="hint">This sportsbook is limited to a few friends, and it’s full.</p>
+        <p>
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
+      </div>
+    );
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();

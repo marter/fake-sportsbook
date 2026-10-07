@@ -17,6 +17,8 @@ class Settings(BaseSettings):
 
     # Play money every new account starts with ($1,000.00).
     starting_balance_cents: int = 100_000
+    # Registration closes once this many accounts exist. Keeps the public site to friends.
+    max_users: int = 5
 
     # The Odds API. With no key set, odds load from fixtures/nfl_odds.json instead.
     odds_api_key: str = ""

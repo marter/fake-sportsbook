@@ -44,3 +44,24 @@ def test_login(client: TestClient) -> None:
 
 def test_me_requires_auth(client: TestClient) -> None:
     assert client.get("/api/auth/me").status_code == 401
+
+
+def test_registration_closes_at_max_users(client: TestClient, monkeypatch) -> None:
+    monkeypatch.setattr(get_settings(), "max_users", 2)
+    assert client.get("/api/auth/registration").json() == {"open": True}
+    register(client, "one@example.com")
+    register(client, "two@example.com")
+    assert client.get("/api/auth/registration").json() == {"open": False}
+
+    response = client.post(
+        "/api/auth/register",
+        json={"email": "three@example.com", "password": "hunter22!", "display_name": "Three"},
+    )
+    assert response.status_code == 403
+    assert "closed" in response.json()["detail"]
+
+    # Existing accounts can still log in.
+    login = client.post(
+        "/api/auth/login", json={"email": "one@example.com", "password": "hunter22!"}
+    )
+    assert login.status_code == 200
