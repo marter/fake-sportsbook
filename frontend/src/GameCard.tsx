@@ -1,3 +1,4 @@
+import { MarketHeaders } from "./MarketHelp";
 import type { Game, Market, OddsLine } from "./types";
 import { formatAmericanOdds, formatKickoff, formatPoint, splitTeamName } from "./format";
 
@@ -41,9 +42,7 @@ export function GameCard({ game }: { game: Game }) {
     <article className="game-card">
       <div className="game-row game-row--header">
         <span className="game-kickoff">{formatKickoff(game.commence_time)}</span>
-        <span>Spread</span>
-        <span>Total</span>
-        <span>Money</span>
+        <MarketHeaders />
       </div>
       <TeamRow game={game} team={game.away_team} totalSide="Over" />
       <TeamRow game={game} team={game.home_team} totalSide="Under" />
