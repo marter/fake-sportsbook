@@ -579,8 +579,10 @@ button.market-header[aria-expanded="true"] {
   font-weight: 650;
 }
 
-.odds-footnote {
-  text-align: center;
+.games-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 @media (max-width: 360px) {
