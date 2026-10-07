@@ -5,6 +5,7 @@ import {
   selectionLabel,
   splitTeamName,
 } from "./format";
+import type { ReactNode } from "react";
 import type { Bet } from "./types";
 
 const STATUS_LABEL: Record<Bet["status"], string> = {
@@ -15,7 +16,7 @@ const STATUS_LABEL: Record<Bet["status"], string> = {
   void: "Void",
 };
 
-export function BetCard({ bet }: { bet: Bet }) {
+export function BetCard({ bet, actions }: { bet: Bet; actions?: ReactNode }) {
   const leg = bet.legs[0];
   const { game } = leg;
   const winnings = bet.potential_payout_cents - bet.stake_cents;
@@ -54,11 +55,12 @@ export function BetCard({ bet }: { bet: Bet }) {
           </div>
         ) : (
           <div>
-            <dt>Paid out</dt>
+            <dt>{bet.status === "void" || bet.status === "push" ? "Refunded" : "Paid out"}</dt>
             <dd>{formatMoney(bet.payout_cents ?? 0)}</dd>
           </div>
         )}
       </dl>
+      {actions}
     </article>
   );
 }

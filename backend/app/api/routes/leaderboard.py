@@ -12,6 +12,8 @@ from app.services import settlement
 router = APIRouter(prefix="/api/leaderboard", tags=["leaderboard"])
 
 SETTLED = (BetStatus.WON, BetStatus.LOST, BetStatus.PUSH, BetStatus.VOID)
+# Voided bets were cancelled, so their stake doesn't count toward money staked (or ROI).
+STAKED = (BetStatus.WON, BetStatus.LOST, BetStatus.PUSH)
 
 
 @router.get("", response_model=list[LeaderboardRow])
@@ -27,7 +29,7 @@ def leaderboard(
 
     settled = Bet.status.in_(SETTLED)
     profit = func.coalesce(func.sum(Bet.payout_cents - Bet.stake_cents).filter(settled), 0)
-    staked = func.coalesce(func.sum(Bet.stake_cents).filter(settled), 0)
+    staked = func.coalesce(func.sum(Bet.stake_cents).filter(Bet.status.in_(STAKED)), 0)
     wins = func.count(Bet.id).filter(Bet.status == BetStatus.WON)
     rows = db.execute(
         select(

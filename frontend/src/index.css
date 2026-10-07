@@ -1031,3 +1031,20 @@ button.back-link {
 .leaderboard-profit.amount-credit {
   color: var(--accent);
 }
+
+/* ---- Destructive actions ---- */
+
+button.btn-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--accent-contrast);
+}
+
+button.btn-secondary.btn-danger-text {
+  color: var(--danger);
+}
+
+button.btn-secondary.btn-danger-text:hover:not(:disabled) {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
