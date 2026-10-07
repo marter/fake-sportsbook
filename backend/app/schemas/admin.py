@@ -36,3 +36,7 @@ class BalanceAdjustment(BaseModel):
 class AdminUserBets(BaseModel):
     user: AdminUserRead
     bets: list[BetRead]
+
+
+class VoidBet(BaseModel):
+    note: str | None = Field(default=None, max_length=200)

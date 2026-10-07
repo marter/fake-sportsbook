@@ -1,15 +1,17 @@
 import uuid
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy import select, text
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import require_admin
 from app.api.routes.bets import BetState, bets_for_user
 from app.core.db import get_db
+from app.models.bet import Bet, BetLeg, BetStatus
 from app.models.ledger import LedgerEntry, LedgerKind
 from app.models.user import User
-from app.schemas.admin import AdminUserBets, AdminUserRead, BalanceAdjustment
+from app.schemas.admin import AdminUserBets, AdminUserRead, BalanceAdjustment, VoidBet
 from app.schemas.bet import BetRead, LedgerEntryRead
 from app.services import settlement, wallet
 
@@ -69,3 +71,42 @@ def user_bets(
         user=AdminUserRead.model_validate(user),
         bets=[BetRead.model_validate(b) for b in bets_for_user(db, user_id, state)],
     )
+
+
+@router.post("/bets/{bet_id}/void", response_model=BetRead)
+def void_bet(
+    bet_id: uuid.UUID,
+    payload: VoidBet,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> BetRead:
+    """Cancels an open bet and refunds the stake (e.g. one placed by mistake)."""
+    # Same lock as settlement, so a void and a settlement can't both act on this bet.
+    db.execute(text("SELECT pg_advisory_xact_lock(hashtext('settlement'))"))
+    bet = db.scalars(select(Bet).where(Bet.id == bet_id).with_for_update()).first()
+    if bet is None:
+        raise HTTPException(status_code=404, detail="Bet not found")
+    if bet.status != BetStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Only open bets can be voided")
+
+    bet.status = BetStatus.VOID
+    bet.payout_cents = bet.stake_cents
+    bet.settled_at = datetime.now(UTC)
+    user = wallet.lock_user(db, bet.user_id)
+    wallet.apply(
+        db,
+        user,
+        bet.stake_cents,
+        LedgerKind.BET_REFUND,
+        bet_id=bet.id,
+        created_by_id=admin.id,
+        note=(payload.note or "").strip() or "Voided by admin",
+    )
+    db.commit()
+
+    loaded = db.scalars(
+        select(Bet)
+        .where(Bet.id == bet_id)
+        .options(selectinload(Bet.legs).selectinload(BetLeg.game))
+    ).one()
+    return BetRead.model_validate(loaded)

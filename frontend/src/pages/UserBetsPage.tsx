@@ -8,6 +8,8 @@ import { BetCard } from "../BetCard";
 import { BetTabs } from "../BetTabs";
 import type { BetTab } from "../BetTabs";
 import { formatMoney } from "../format";
+import { VoidBetDialog } from "../VoidBetDialog";
+import type { Bet } from "../types";
 
 /** Admin-only: another user's bets. */
 export function UserBetsPage() {
@@ -15,6 +17,7 @@ export function UserBetsPage() {
   const { me } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<BetTab>("open");
+  const [voiding, setVoiding] = useState<Bet | null>(null);
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-user-bets", userId, tab],
     queryFn: () => fetchUserBets(userId, tab),
@@ -56,7 +59,30 @@ export function UserBetsPage() {
           <p>{tab === "open" ? "No open bets." : "No settled bets yet."}</p>
         </div>
       )}
-      {data?.bets.map((bet) => <BetCard key={bet.id} bet={bet} />)}
+      {data?.bets.map((bet) => (
+        <BetCard
+          key={bet.id}
+          bet={bet}
+          actions={
+            bet.status === "pending" && (
+              <button
+                type="button"
+                className="btn-secondary btn-danger-text"
+                onClick={() => setVoiding(bet)}
+              >
+                Void bet
+              </button>
+            )
+          }
+        />
+      ))}
+      {voiding && data && (
+        <VoidBetDialog
+          bet={voiding}
+          ownerName={data.user.display_name}
+          onClose={() => setVoiding(null)}
+        />
+      )}
     </>
   );
 }

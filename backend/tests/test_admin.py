@@ -124,3 +124,59 @@ def test_view_bets_of_unknown_user_is_404(client: TestClient, db: Session) -> No
     make_admin(db, "boss@example.com")
     missing = "00000000-0000-0000-0000-000000000000"
     assert client.get(f"/api/admin/users/{missing}/bets", headers=admin).status_code == 404
+
+
+def place_bet(client: TestClient, headers: dict[str, str], stake: int = 2_000) -> dict:
+    game = client.get("/api/games", headers=headers).json()["games"][0]
+    line = game["odds_lines"][0]
+    return client.post(
+        "/api/bets",
+        json={
+            "odds_line_id": line["id"],
+            "stake_cents": stake,
+            "expected_price_american": line["price_american"],
+            "expected_point": line["point"],
+        },
+        headers=headers,
+    ).json()["bet"]
+
+
+def test_admin_voids_open_bet_with_refund(client: TestClient, db: Session) -> None:
+    admin = register(client, "boss@example.com")
+    make_admin(db, "boss@example.com")
+    pat = register(client, "pat@example.com")
+    bet = place_bet(client, pat, 2_000)
+    assert client.get("/api/auth/me", headers=pat).json()["balance_cents"] == 98_000
+
+    voided = client.post(
+        f"/api/admin/bets/{bet['id']}/void", json={"note": "Fat-fingered the stake"}, headers=admin
+    )
+    assert voided.status_code == 200, voided.text
+    assert (voided.json()["status"], voided.json()["payout_cents"]) == ("void", 2_000)
+    assert client.get("/api/auth/me", headers=pat).json()["balance_cents"] == 100_000
+
+    refund = client.get("/api/wallet/ledger", headers=pat).json()[0]
+    assert (refund["kind"], refund["amount_cents"]) == ("bet_refund", 2_000)
+    assert refund["note"] == "Fat-fingered the stake"
+    settled = client.get("/api/bets?state=settled", headers=pat).json()
+    assert [b["status"] for b in settled] == ["void"]
+
+    # Can't void twice, and a voided bet doesn't count toward staked/ROI.
+    again = client.post(f"/api/admin/bets/{bet['id']}/void", json={}, headers=admin)
+    assert again.status_code == 400
+    board = {r["display_name"]: r for r in client.get("/api/leaderboard", headers=pat).json()}
+    assert (board["pat"]["profit_cents"], board["pat"]["staked_cents"]) == (0, 0)
+
+
+def test_only_admins_can_void(client: TestClient, db: Session) -> None:
+    pat = register(client, "pat@example.com")
+    bet = place_bet(client, pat)
+    assert client.post(f"/api/admin/bets/{bet['id']}/void", json={}, headers=pat).status_code == 403
+    assert client.get("/api/auth/me", headers=pat).json()["balance_cents"] == 98_000
+
+
+def test_void_unknown_bet_is_404(client: TestClient, db: Session) -> None:
+    admin = register(client, "boss@example.com")
+    make_admin(db, "boss@example.com")
+    missing = "00000000-0000-0000-0000-000000000000"
+    assert client.post(f"/api/admin/bets/{missing}/void", json={}, headers=admin).status_code == 404

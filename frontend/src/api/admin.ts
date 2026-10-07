@@ -28,3 +28,8 @@ export async function fetchUserBets(
   );
   return data;
 }
+
+export async function voidBet(betId: string, note?: string): Promise<Bet> {
+  const { data } = await apiClient.post<Bet>(`/api/admin/bets/${betId}/void`, { note });
+  return data;
+}
