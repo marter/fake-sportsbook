@@ -82,6 +82,6 @@ npm run dev
 3. ~~Betting: wallet ledger, bet placement with row locking and line-move checks, bet slip,
    admin balance adjustments~~
 4. ~~Settlement: scores (short cache, only for started games with pending bets), grading, payouts~~
-5. Polish: leaderboard, daily top-up, PWA
+5. Polish: ~~leaderboard~~, daily top-up, PWA
 
 Deployment: one Lightsail server with Docker Compose and Caddy. See `deploy/README.md`.
