@@ -1,4 +1,10 @@
-import { formatAmericanOdds, formatDateTime, formatMoney, selectionLabel } from "./format";
+import {
+  formatAmericanOdds,
+  formatDateTime,
+  formatMoney,
+  selectionLabel,
+  splitTeamName,
+} from "./format";
 import type { Bet } from "./types";
 
 const STATUS_LABEL: Record<Bet["status"], string> = {
@@ -28,7 +34,8 @@ export function BetCard({ bet }: { bet: Bet }) {
       <div className="bet-card-bottom">
         <span className="hint">
           {game.completed && game.away_score != null
-            ? `Final: ${game.away_score}–${game.home_score}`
+            ? `Final: ${splitTeamName(game.away_team)[1]} ${game.away_score}, ` +
+              `${splitTeamName(game.home_team)[1]} ${game.home_score}`
             : formatDateTime(game.commence_time)}
         </span>
         <span className={`status-badge status-badge--${bet.status}`}>

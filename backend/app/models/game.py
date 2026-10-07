@@ -60,11 +60,16 @@ class OddsLine(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 
 class OddsFetch(UUIDPrimaryKeyMixin, Base):
-    """One call to The Odds API (or fixture load). The latest row per sport drives caching."""
+    """One call to The Odds API (or fixture load). The latest row per sport and kind drives
+    caching: the weekly odds refresh and the scores throttle each look only at their own kind.
+    """
 
     __tablename__ = "odds_fetches"
 
     sport_key: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    kind: Mapped[str] = mapped_column(  # "odds" | "scores"
+        String(16), nullable=False, default="odds", server_default="odds"
+    )
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     source: Mapped[str] = mapped_column(String(16), nullable=False)  # "api" | "fixture"
     event_count: Mapped[int] = mapped_column(Integer, nullable=False)

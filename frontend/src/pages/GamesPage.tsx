@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchGames } from "../api/games";
 import { extractErrorMessage } from "../api/client";
 import { GameCard } from "../GameCard";
 import { BetSlip } from "../BetSlip";
+import { useAuth } from "../auth/AuthContext";
 import { formatDayHeading, formatTimeAgo } from "../format";
 import type { Game, Selection } from "../types";
 
@@ -17,12 +18,18 @@ function groupByDay(games: Game[]): [string, Game[]][] {
 }
 
 export function GamesPage() {
-  const { data, isLoading, error } = useQuery({
+  const { refreshMe } = useAuth();
+  const { data, isLoading, error, dataUpdatedAt } = useQuery({
     queryKey: ["games"],
     queryFn: fetchGames,
     staleTime: 5 * 60_000,
   });
   const [selection, setSelection] = useState<Selection | null>(null);
+
+  // Loading games can settle finished bets server-side, so refresh the header balance.
+  useEffect(() => {
+    if (dataUpdatedAt) refreshMe();
+  }, [dataUpdatedAt, refreshMe]);
 
   return (
     <>

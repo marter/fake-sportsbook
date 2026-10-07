@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     odds_bookmaker: str = "draftkings"
     # Odds are refetched at most this often. Each refetch costs 3 credits (3 markets).
     odds_cache_hours: int = 24 * 7
+    # Settlement: start checking for a final score this long after kickoff, and call the
+    # scores endpoint (2 credits) at most this often while any bet is waiting on a result.
+    game_duration_minutes: int = 180
+    scores_min_interval_minutes: int = 30
 
 
 @lru_cache

@@ -85,6 +85,7 @@ alias dc='docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.en
 dc ps
 dc logs -f backend
 dc exec backend python -m app.services.odds        # force an odds refresh
+dc exec backend python -m app.cli settle            # fetch scores now and settle finished bets
 dc exec db psql -U sportsbook fake_sportsbook       # database shell
 dc exec backend python -m app.cli make-admin you@example.com    # grant admin (remove-admin to revoke)
 ```

@@ -44,6 +44,22 @@ def fetch_events_from_api() -> tuple[list[dict[str, Any]], int | None]:
     return response.json(), int(float(remaining)) if remaining else None
 
 
+def fetch_scores_from_api() -> tuple[list[dict[str, Any]], int | None]:
+    """Returns recent and upcoming games with scores (completed ones from the last 3 days).
+
+    Costs 2 credits per call because of `daysFrom`.
+    """
+    settings = get_settings()
+    response = httpx.get(
+        f"{settings.odds_api_base_url}/sports/{settings.odds_sport_key}/scores",
+        params={"apiKey": settings.odds_api_key, "daysFrom": 3, "dateFormat": "iso"},
+        timeout=15,
+    )
+    response.raise_for_status()
+    remaining = response.headers.get("x-requests-remaining")
+    return response.json(), int(float(remaining)) if remaining else None
+
+
 def load_fixture_events(now: datetime) -> list[dict[str, Any]]:
     """Loads saved sample events, moved forward by whole weeks so they're upcoming.
 
@@ -114,10 +130,10 @@ def upsert_events(db: Session, events: list[dict[str, Any]], bookmaker: str) -> 
                 )
 
 
-def latest_fetch(db: Session, sport_key: str) -> OddsFetch | None:
+def latest_fetch(db: Session, sport_key: str, kind: str = "odds") -> OddsFetch | None:
     return db.scalars(
         select(OddsFetch)
-        .where(OddsFetch.sport_key == sport_key)
+        .where(OddsFetch.sport_key == sport_key, OddsFetch.kind == kind)
         .order_by(OddsFetch.fetched_at.desc())
         .limit(1)
     ).first()

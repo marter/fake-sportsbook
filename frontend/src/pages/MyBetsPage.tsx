@@ -1,18 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchBets } from "../api/bets";
 import { extractErrorMessage } from "../api/client";
 import { BetCard } from "../BetCard";
+import { useAuth } from "../auth/AuthContext";
 
 type Tab = "open" | "settled";
 
 export function MyBetsPage() {
   const [tab, setTab] = useState<Tab>("open");
-  const { data: bets, isLoading, error } = useQuery({
+  const { refreshMe } = useAuth();
+  const { data: bets, isLoading, error, dataUpdatedAt } = useQuery({
     queryKey: ["bets", tab],
     queryFn: () => fetchBets(tab),
   });
+
+  // Loading bets can settle finished games server-side, so refresh the header balance.
+  useEffect(() => {
+    if (dataUpdatedAt) refreshMe();
+  }, [dataUpdatedAt, refreshMe]);
 
   return (
     <>
