@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { AdminUser, Bet, LedgerEntry } from "../types";
+import type { AdminUser, Bet, LedgerEntry, StuckGame } from "../types";
 
 export async function fetchUsers(): Promise<AdminUser[]> {
   const { data } = await apiClient.get<AdminUser[]>("/api/admin/users");
@@ -41,4 +41,9 @@ export async function markVerified(userId: string): Promise<AdminUser> {
 
 export async function deleteUnverifiedUser(userId: string): Promise<void> {
   await apiClient.delete(`/api/admin/users/${userId}`);
+}
+
+export async function fetchStuckGames(): Promise<StuckGame[]> {
+  const { data } = await apiClient.get<StuckGame[]>("/api/admin/stuck-games");
+  return data;
 }

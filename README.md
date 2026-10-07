@@ -71,6 +71,12 @@ npm run dev
   background worker. `GET /api/games` checks the cache, and if it's stale, makes one call to
   The Odds API (NFL, DraftKings, moneyline/spread/total, about 3 credits). If that call
   fails, the API serves the stale odds. The frontend never calls The Odds API directly.
+- **Background worker** (`python -m app.worker`, the `settler` service in production): every
+  15 minutes it runs the same cached checks as page loads, so odds refresh once a day and bets
+  settle soon after games end even if nobody opens the app. It only spends credits when those
+  checks are due. Score checks stop for a game with no final score 24h after kickoff (it's
+  listed under "Needs attention" on the admin page for voiding) and pause when fewer than 50
+  API credits are left.
 - **Settlement**: also on demand. Loading bets or games checks whether any open bet is
   waiting on a game that kicked off over `GAME_DURATION_MINUTES` (180) ago; if so, it calls
   the scores endpoint (2 credits) at most every `SCORES_MIN_INTERVAL_MINUTES` (30), records

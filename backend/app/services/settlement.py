@@ -73,21 +73,54 @@ def bet_outcome(bet: Bet) -> tuple[BetStatus, int]:
     return BetStatus.WON, payout
 
 
+def _unfinished_games_with_open_bets(db: Session):
+    return (
+        select(Game)
+        .join(BetLeg, BetLeg.game_id == Game.id)
+        .join(Bet, Bet.id == BetLeg.bet_id)
+        .where(Bet.status == BetStatus.PENDING, Game.completed.is_(False))
+        .distinct()
+    )
+
+
 def _games_awaiting_result(db: Session, now: datetime) -> list[Game]:
-    """Games with open bets that kicked off long enough ago that they should be over."""
-    cutoff = now - timedelta(minutes=get_settings().game_duration_minutes)
+    """Games with open bets that should be over by now but aren't past the give-up window."""
+    settings = get_settings()
+    should_be_over = now - timedelta(minutes=settings.game_duration_minutes)
+    give_up = now - timedelta(hours=settings.settlement_give_up_hours)
     return list(
         db.scalars(
-            select(Game)
-            .join(BetLeg, BetLeg.game_id == Game.id)
-            .join(Bet, Bet.id == BetLeg.bet_id)
-            .where(
-                Bet.status == BetStatus.PENDING,
-                Game.completed.is_(False),
-                Game.commence_time <= cutoff,
+            _unfinished_games_with_open_bets(db).where(
+                Game.commence_time <= should_be_over, Game.commence_time > give_up
             )
-            .distinct()
         ).all()
+    )
+
+
+def stuck_games(db: Session) -> list[Game]:
+    """Games with open bets and still no final score past the give-up window."""
+    give_up = datetime.now(UTC) - timedelta(hours=get_settings().settlement_give_up_hours)
+    return list(
+        db.scalars(
+            _unfinished_games_with_open_bets(db)
+            .where(Game.commence_time <= give_up)
+            .order_by(Game.commence_time)
+        ).all()
+    )
+
+
+def _low_on_credits(db: Session) -> bool:
+    """True if the most recent API call reported fewer credits left than the floor."""
+    last_api_call = db.scalars(
+        select(OddsFetch)
+        .where(OddsFetch.source == "api", OddsFetch.requests_remaining.is_not(None))
+        .order_by(OddsFetch.fetched_at.desc())
+        .limit(1)
+    ).first()
+    return (
+        last_api_call is not None
+        and last_api_call.requests_remaining is not None
+        and last_api_call.requests_remaining < get_settings().scores_min_credits
     )
 
 
@@ -200,7 +233,12 @@ def settle_if_due(db: Session, *, force_fetch: bool = False) -> int:
         minutes=settings.scores_min_interval_minutes
     )
 
-    if awaiting and (force_fetch or not throttled):
+    low_credits = settings.odds_api_key and _low_on_credits(db)
+    if awaiting and low_credits:
+        logger.warning(
+            "Skipping score check: under %d API credits left", settings.scores_min_credits
+        )
+    if awaiting and not low_credits and (force_fetch or not throttled):
         try:
             if settings.odds_api_key:
                 events, remaining = odds.fetch_scores_from_api()

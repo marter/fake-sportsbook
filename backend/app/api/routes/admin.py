@@ -11,7 +11,14 @@ from app.core.db import get_db
 from app.models.bet import Bet, BetLeg, BetStatus
 from app.models.ledger import LedgerEntry, LedgerKind
 from app.models.user import User
-from app.schemas.admin import AdminUserBets, AdminUserRead, BalanceAdjustment, VoidBet
+from app.schemas.admin import (
+    AdminUserBets,
+    AdminUserRead,
+    BalanceAdjustment,
+    StuckBet,
+    StuckGame,
+    VoidBet,
+)
 from app.schemas.bet import BetRead, LedgerEntryRead
 from app.services import settlement, wallet
 
@@ -140,3 +147,33 @@ def delete_unverified_user(
     db.execute(delete(LedgerEntry).where(LedgerEntry.user_id == user_id))
     db.delete(user)
     db.commit()
+
+
+@router.get("/stuck-games", response_model=list[StuckGame])
+def list_stuck_games(
+    db: Session = Depends(get_db), _admin: User = Depends(require_admin)
+) -> list[StuckGame]:
+    """Games with open bets that still have no final score a day after kickoff (postponed or
+    cancelled). Settlement has stopped checking them; void their bets if they won't be played."""
+    result = []
+    for game in settlement.stuck_games(db):
+        rows = db.execute(
+            select(Bet.id, Bet.user_id, User.display_name, Bet.stake_cents)
+            .join(BetLeg, BetLeg.bet_id == Bet.id)
+            .join(User, User.id == Bet.user_id)
+            .where(BetLeg.game_id == game.id, Bet.status == BetStatus.PENDING)
+            .order_by(Bet.created_at)
+        ).all()
+        result.append(
+            StuckGame(
+                game_id=game.id,
+                home_team=game.home_team,
+                away_team=game.away_team,
+                commence_time=game.commence_time,
+                open_bets=[
+                    StuckBet(bet_id=r[0], user_id=r[1], display_name=r[2], stake_cents=r[3])
+                    for r in rows
+                ],
+            )
+        )
+    return result

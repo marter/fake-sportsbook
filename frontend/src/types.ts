@@ -109,3 +109,11 @@ export interface LeaderboardRow {
   pushes: number;
   open_bets: number;
 }
+
+export interface StuckGame {
+  game_id: string;
+  home_team: string;
+  away_team: string;
+  commence_time: string;
+  open_bets: { bet_id: string; user_id: string; display_name: string; stake_cents: number }[];
+}

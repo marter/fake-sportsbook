@@ -41,3 +41,18 @@ class AdminUserBets(BaseModel):
 
 class VoidBet(BaseModel):
     note: str | None = Field(default=None, max_length=200)
+
+
+class StuckBet(BaseModel):
+    bet_id: uuid.UUID
+    user_id: uuid.UUID
+    display_name: str
+    stake_cents: int
+
+
+class StuckGame(BaseModel):
+    game_id: uuid.UUID
+    home_team: str
+    away_team: str
+    commence_time: datetime
+    open_bets: list[StuckBet]
