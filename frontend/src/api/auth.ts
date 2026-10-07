@@ -27,6 +27,11 @@ export async function login(input: LoginInput): Promise<string> {
   return data.access_token;
 }
 
+export async function fetchRegistrationOpen(): Promise<boolean> {
+  const { data } = await apiClient.get<{ open: boolean }>("/api/auth/registration");
+  return data.open;
+}
+
 export async function fetchMe(): Promise<Me> {
   const { data } = await apiClient.get<Me>("/api/auth/me");
   return data;

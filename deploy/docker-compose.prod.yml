@@ -39,6 +39,7 @@ services:
       DATABASE_URL: postgresql+psycopg://sportsbook:${POSTGRES_PASSWORD}@db:5432/fake_sportsbook
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in deploy/.env.prod}
       ODDS_API_KEY: ${ODDS_API_KEY:-}
+      MAX_USERS: ${MAX_USERS:-5}
       CORS_ORIGINS: '["https://${SPORTSBOOK_HOST:?set in deploy/.env.prod}"]'
     depends_on:
       db:
