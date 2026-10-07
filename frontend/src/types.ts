@@ -95,3 +95,15 @@ export interface Selection {
   game: Game;
   line: OddsLine;
 }
+
+export interface LeaderboardRow {
+  rank: number;
+  user_id: string;
+  display_name: string;
+  profit_cents: number;
+  staked_cents: number;
+  wins: number;
+  losses: number;
+  pushes: number;
+  open_bets: number;
+}
