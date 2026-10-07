@@ -51,7 +51,14 @@ export function GamesPage() {
   return (
     <>
       {sports && <SportTabs sports={sports} />}
-      <h1>{sport?.name ?? slug.toUpperCase()}</h1>
+      <div className="games-heading">
+        <h1>{sport?.name ?? slug.toUpperCase()}</h1>
+        {data?.odds_updated_at && (
+          <p className="hint">
+            Odds updated {formatTimeAgo(data.odds_updated_at)} · refreshed daily
+          </p>
+        )}
+      </div>
       {isLoading && <p className="page-loading">Loading games…</p>}
       {error && <p className="form-error">{extractErrorMessage(error, "Could not load games.")}</p>}
       {data && data.games.length === 0 && (
@@ -84,11 +91,6 @@ export function GamesPage() {
             ))}
           </section>
         ))}
-      {data?.odds_updated_at && (
-        <p className="hint odds-footnote">
-          Odds updated {formatTimeAgo(data.odds_updated_at)}. They refresh daily.
-        </p>
-      )}
       {selection && (
         <BetSlip
           key={selection.line.id}
