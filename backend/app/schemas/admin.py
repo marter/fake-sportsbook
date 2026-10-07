@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
+from app.schemas.bet import BetRead
+
 
 class AdminUserRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -29,3 +31,8 @@ class BalanceAdjustment(BaseModel):
         if self.amount_cents == 0:
             raise ValueError("amount_cents can't be 0")
         return self
+
+
+class AdminUserBets(BaseModel):
+    user: AdminUserRead
+    bets: list[BetRead]
