@@ -3,6 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.config import get_settings
 from app.core.db import get_db
 from app.models.bet import Bet, BetStatus
 from app.models.user import User
@@ -31,7 +32,7 @@ def leaderboard(
     profit = func.coalesce(func.sum(Bet.payout_cents - Bet.stake_cents).filter(settled), 0)
     staked = func.coalesce(func.sum(Bet.stake_cents).filter(Bet.status.in_(STAKED)), 0)
     wins = func.count(Bet.id).filter(Bet.status == BetStatus.WON)
-    rows = db.execute(
+    query = (
         select(
             User.id,
             User.display_name,
@@ -46,7 +47,10 @@ def leaderboard(
         .where(User.is_active.is_(True))
         .group_by(User.id)
         .order_by(profit.desc(), wins.desc(), User.display_name)
-    ).all()
+    )
+    if get_settings().email_verification_required:
+        query = query.where(User.email_verified_at.is_not(None))  # can't play yet
+    rows = db.execute(query).all()
 
     board: list[LeaderboardRow] = []
     for i, row in enumerate(rows):

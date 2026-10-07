@@ -40,6 +40,9 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in deploy/.env.prod}
       ODDS_API_KEY: ${ODDS_API_KEY:-}
       MAX_USERS: ${MAX_USERS:-5}
+      EMAIL_BACKEND: resend
+      RESEND_API_KEY: ${RESEND_API_KEY:?set in deploy/.env.prod}
+      APP_BASE_URL: https://${SPORTSBOOK_HOST}
       CORS_ORIGINS: '["https://${SPORTSBOOK_HOST:?set in deploy/.env.prod}"]'
     depends_on:
       db:

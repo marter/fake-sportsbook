@@ -13,7 +13,7 @@ from app.models.game import Game, OddsLine
 from app.models.ledger import LedgerKind
 from app.models.user import User
 from app.schemas.bet import BetCreate, BetRead, PlaceBetResponse
-from app.services import settlement, wallet
+from app.services import settlement, verification, wallet
 from app.services.odds_math import payout_cents
 
 router = APIRouter(prefix="/api/bets", tags=["bets"])
@@ -33,6 +33,8 @@ def place_bet(
     db: Session = Depends(get_db),
     current: User = Depends(get_current_user),
 ) -> PlaceBetResponse:
+    if not verification.is_verified(current):
+        raise HTTPException(status_code=403, detail="Verify your email to place bets")
     line = db.get(OddsLine, payload.odds_line_id)
     if line is None:
         raise HTTPException(status_code=404, detail="That line is no longer available")

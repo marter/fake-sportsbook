@@ -159,12 +159,15 @@ export function BetSlip({ selection, onClose }: { selection: Selection; onClose:
       </dl>
 
       {stakeText !== "" && stakeProblem && <p className="form-error">{stakeProblem}</p>}
+      {me && !me.email_verified && (
+        <p className="slip-notice">Confirm your email first. Check your inbox for the link.</p>
+      )}
       {error && <p className="form-error">{error}</p>}
 
       <button
         type="button"
         className="btn-block"
-        disabled={!!stakeProblem || isPlacing}
+        disabled={!!stakeProblem || isPlacing || !me?.email_verified}
         onClick={submit}
       >
         {isPlacing

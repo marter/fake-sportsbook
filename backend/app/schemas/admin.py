@@ -14,6 +14,7 @@ class AdminUserRead(BaseModel):
     display_name: str
     balance_cents: int
     is_admin: bool
+    email_verified: bool
     created_at: datetime
 
 

@@ -59,6 +59,12 @@ npm run dev
   `STARTING_BALANCE_CENTS` (default $1,000). Every balance change writes a `LedgerEntry`
   (via `app/services/wallet.py`) while holding a row lock on the user, so a user's ledger
   always sums to their balance and concurrent bets can't overspend.
+- **Email verification**: new accounts get a single-use link (24h, stored hashed) and can't
+  bet until they click it; resends are limited to 1/minute and 5/day. Accounts that never
+  verify are deleted after 48 hours so they don't hold one of the `MAX_USERS` slots. Emails
+  go through Resend in production (`RESEND_API_KEY`); locally they're printed in the backend
+  logs (`docker compose logs backend`). Accounts created before this feature were marked
+  verified by the migration.
 - **Admins** can list users and adjust balances (recorded as ledger entries with a note).
   Admin is granted only from the server: `python -m app.cli make-admin <email>`.
 - **Odds**: cached in Postgres for a week (`ODDS_CACHE_HOURS`, default 168). There's no

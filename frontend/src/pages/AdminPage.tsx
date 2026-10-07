@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { adjustBalance, fetchUsers } from "../api/admin";
+import { adjustBalance, deleteUnverifiedUser, fetchUsers, markVerified } from "../api/admin";
 import type { Adjustment } from "../api/admin";
 import { extractErrorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -11,6 +11,45 @@ import { formatMoney, formatSignedMoney, parseDollars } from "../format";
 import type { AdminUser } from "../types";
 
 type Mode = "add" | "remove" | "set";
+
+function VerificationActions({ user, onDone }: { user: AdminUser; onDone: () => void }) {
+  const queryClient = useQueryClient();
+  const done = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    queryClient.invalidateQueries({ queryKey: ["registration-open"] });
+    onDone();
+  };
+  const verify = useMutation({ mutationFn: () => markVerified(user.id), onSuccess: done });
+  const remove = useMutation({ mutationFn: () => deleteUnverifiedUser(user.id), onSuccess: done });
+  const error = verify.error ?? remove.error;
+
+  return (
+    <div className="admin-verify">
+      <p className="hint">
+        {user.display_name} hasn’t confirmed their email, so they can’t bet. Unconfirmed accounts
+        are deleted automatically after 48 hours.
+      </p>
+      <div className="slip-actions">
+        <button
+          type="button"
+          className="btn-secondary btn-danger-text"
+          disabled={remove.isPending}
+          onClick={() => {
+            if (window.confirm(`Delete ${user.email}? This frees their sign-up spot.`)) {
+              remove.mutate();
+            }
+          }}
+        >
+          Delete account
+        </button>
+        <button type="button" disabled={verify.isPending} onClick={() => verify.mutate()}>
+          Mark verified
+        </button>
+      </div>
+      {error && <p className="form-error">{extractErrorMessage(error, "That didn't work.")}</p>}
+    </div>
+  );
+}
 
 function AdjustForm({ user, onDone }: { user: AdminUser; onDone: () => void }) {
   const { me, refreshMe } = useAuth();
@@ -157,6 +196,11 @@ export function AdminPage() {
                 <span className="ledger-kind">
                   {u.display_name}
                   {u.is_admin && <span className="status-badge status-badge--admin">Admin</span>}
+                  {!u.email_verified && (
+                    <span className="status-badge status-badge--admin status-badge--lost">
+                      Unverified
+                    </span>
+                  )}
                 </span>
                 <span className="hint">{u.email}</span>
               </span>
@@ -167,6 +211,9 @@ export function AdminPage() {
       </ul>
       {editing && (
         <Modal title={`Adjust ${editing.display_name}`} onClose={() => setEditing(null)}>
+          {!editing.email_verified && (
+            <VerificationActions user={editing} onDone={() => setEditing(null)} />
+          )}
           <AdjustForm user={editing} onDone={() => setEditing(null)} />
         </Modal>
       )}

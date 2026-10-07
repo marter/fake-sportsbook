@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, text
+from sqlalchemy import delete, select, text
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import require_admin
@@ -110,3 +110,33 @@ def void_bet(
         .options(selectinload(Bet.legs).selectinload(BetLeg.game))
     ).one()
     return BetRead.model_validate(loaded)
+
+
+@router.post("/users/{user_id}/verify", response_model=AdminUserRead)
+def mark_verified(
+    user_id: uuid.UUID, db: Session = Depends(get_db), _admin: User = Depends(require_admin)
+) -> User:
+    """For when the verification email doesn't arrive."""
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not user.email_verified:
+        user.email_verified_at = datetime.now(UTC)
+        db.commit()
+    return user
+
+
+@router.delete("/users/{user_id}", status_code=204)
+def delete_unverified_user(
+    user_id: uuid.UUID, db: Session = Depends(get_db), admin: User = Depends(require_admin)
+) -> None:
+    """Deletes an account that never verified (e.g. a typo'd email holding a sign-up slot).
+    Verified accounts can't be deleted here, since they may have bets and history."""
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.email_verified:
+        raise HTTPException(status_code=400, detail="Only unverified accounts can be deleted")
+    db.execute(delete(LedgerEntry).where(LedgerEntry.user_id == user_id))
+    db.delete(user)
+    db.commit()

@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
@@ -8,9 +10,15 @@ from app.core.db import get_db
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.ledger import LedgerKind
 from app.models.user import User
-from app.schemas.auth import LoginRequest, RegisterRequest, RegistrationStatus, TokenResponse
+from app.schemas.auth import (
+    LoginRequest,
+    RegisterRequest,
+    RegistrationStatus,
+    TokenResponse,
+    VerifyEmailRequest,
+)
 from app.schemas.user import UserRead
-from app.services import wallet
+from app.services import verification, wallet
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -24,12 +32,14 @@ def registration_open(db: Session) -> bool:
 
 @router.get("/registration", response_model=RegistrationStatus)
 def registration_status(db: Session = Depends(get_db)) -> RegistrationStatus:
+    verification.purge_stale_unverified(db)
     return RegistrationStatus(open=registration_open(db))
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
     # Serialize sign-ups so two at once can't both squeeze under the limit.
+    verification.purge_stale_unverified(db)
     db.execute(text("SELECT pg_advisory_xact_lock(hashtext('register'))"))
     if not registration_open(db):
         raise HTTPException(status_code=403, detail=REGISTRATION_CLOSED)
@@ -47,6 +57,8 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
     db.add(user)
     db.flush()
     wallet.apply(db, user, get_settings().starting_balance_cents, LedgerKind.SIGNUP_BONUS)
+    if get_settings().email_verification_required:
+        verification.send_verification(db, user)
     db.commit()
 
     return TokenResponse(access_token=create_access_token(subject=str(user.id)))
@@ -64,3 +76,26 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
 @router.get("/me", response_model=UserRead)
 def me(current: User = Depends(get_current_user)) -> User:
     return current
+
+
+@router.post("/verify-email", response_model=UserRead)
+def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)) -> User:
+    """Confirms an email from the emailed link. No login needed: the token is the proof."""
+    try:
+        return verification.verify(db, payload.token)
+    except verification.VerificationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/resend-verification", status_code=status.HTTP_204_NO_CONTENT)
+def resend_verification(
+    db: Session = Depends(get_db), current: User = Depends(get_current_user)
+) -> None:
+    if current.email_verified:
+        raise HTTPException(status_code=400, detail="Your email is already verified")
+    try:
+        verification.check_rate_limit(db, current, datetime.now(UTC))
+    except verification.TooManyEmails as exc:
+        raise HTTPException(status_code=429, detail=str(exc)) from exc
+    verification.send_verification(db, current)
+    db.commit()

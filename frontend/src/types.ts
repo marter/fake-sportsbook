@@ -4,6 +4,7 @@ export interface User {
   display_name: string;
   balance_cents: number;
   is_admin: boolean;
+  email_verified: boolean;
 }
 
 export type Me = User;
@@ -87,6 +88,7 @@ export interface AdminUser {
   display_name: string;
   balance_cents: number;
   is_admin: boolean;
+  email_verified: boolean;
   created_at: string;
 }
 
