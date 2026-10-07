@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime, timedelta
 
 import httpx
@@ -114,3 +115,16 @@ def test_started_games_are_hidden(
     games = client.get("/api/games", headers=auth_headers).json()["games"]
     assert len(games) == 7
     assert str(first.id) not in {g["id"] for g in games}
+
+
+@pytest.mark.parametrize("days_later", [0, 3, 9, 40])
+def test_fixture_keeps_real_weekdays(days_later: int) -> None:
+    fixture = json.loads(odds.FIXTURE_PATH.read_text())
+    originals = [odds._parse_time(e["commence_time"]) for e in fixture]
+    now = min(originals) - timedelta(days=2) + timedelta(days=days_later)
+
+    shifted = [odds._parse_time(e["commence_time"]) for e in odds.load_fixture_events(now)]
+    for before, after in zip(originals, shifted, strict=True):
+        assert (after - before) % timedelta(weeks=1) == timedelta(0)
+    assert min(shifted) > now - timedelta(weeks=1)
+    assert max(shifted) > now
