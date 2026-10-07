@@ -65,6 +65,12 @@ npm run dev
   background worker. `GET /api/games` checks the cache, and if it's stale, makes one call to
   The Odds API (NFL, DraftKings, moneyline/spread/total, about 3 credits). If that call
   fails, the API serves the stale odds. The frontend never calls The Odds API directly.
+- **Settlement**: also on demand. Loading bets or games checks whether any open bet is
+  waiting on a game that kicked off over `GAME_DURATION_MINUTES` (180) ago; if so, it calls
+  the scores endpoint (2 credits) at most every `SCORES_MIN_INTERVAL_MINUTES` (30), records
+  final scores, grades legs, and pays winners / refunds pushes through the ledger. A
+  settlement-wide advisory lock plus row locks on open bets mean a bet is paid exactly once.
+  Force a run with `python -m app.cli settle`.
 - **No API key?** With `ODDS_API_KEY` unset, odds load from `backend/fixtures/nfl_odds.json`,
   shifted so the games are always in the near future.
 - **Force a refresh**: `docker compose exec backend python -m app.services.odds`
@@ -75,7 +81,7 @@ npm run dev
 2. ~~NFL odds: weekly cache, fixture mode, games list~~
 3. ~~Betting: wallet ledger, bet placement with row locking and line-move checks, bet slip,
    admin balance adjustments~~
-4. Settlement: scores (short cache, only for started games with pending bets), grading, payouts
+4. ~~Settlement: scores (short cache, only for started games with pending bets), grading, payouts~~
 5. Polish: leaderboard, daily top-up, PWA
 
 Deployment: one Lightsail server with Docker Compose and Caddy. See `deploy/README.md`.

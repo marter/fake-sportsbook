@@ -12,7 +12,7 @@ from app.models.game import Game, OddsLine
 from app.models.ledger import LedgerKind
 from app.models.user import User
 from app.schemas.bet import BetCreate, BetRead, PlaceBetResponse
-from app.services import wallet
+from app.services import settlement, wallet
 from app.services.odds_math import payout_cents
 
 router = APIRouter(prefix="/api/bets", tags=["bets"])
@@ -88,6 +88,7 @@ def list_bets(
     db: Session = Depends(get_db),
     current: User = Depends(get_current_user),
 ) -> list[Bet]:
+    settlement.settle_if_due(db)
     query = (
         select(Bet)
         .where(Bet.user_id == current.id)
@@ -96,5 +97,7 @@ def list_bets(
     if state == "open":
         query = query.where(Bet.status == BetStatus.PENDING).order_by(Bet.created_at)
     else:
-        query = query.where(Bet.status != BetStatus.PENDING).order_by(Bet.settled_at.desc())
+        query = query.where(Bet.status != BetStatus.PENDING).order_by(
+            Bet.settled_at.desc(), Bet.created_at.desc()
+        )
     return list(db.scalars(query).all())
