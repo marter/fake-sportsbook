@@ -136,3 +136,26 @@ def test_score_checks_pause_when_low_on_credits(
     monkeypatch.setattr(odds, "fetch_scores_from_api", fake_scores)
     client.get("/api/bets", headers=auth_headers)
     assert bool(calls) is expect_fetch
+
+
+def test_worker_logging_keeps_api_keys_out_of_logs(monkeypatch: pytest.MonkeyPatch) -> None:
+    import logging
+
+    monkeypatch.setattr(worker, "run_once", lambda: None)
+    monkeypatch.setattr(get_settings(), "worker_interval_seconds", 0)
+
+    class StopAfterFirst:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def is_set(self) -> bool:
+            self.calls += 1
+            return self.calls > 1
+
+        def set(self) -> None: ...
+
+        def wait(self, _timeout: float) -> None: ...
+
+    monkeypatch.setattr(worker.threading, "Event", StopAfterFirst)
+    worker.main()
+    assert logging.getLogger("httpx").getEffectiveLevel() >= logging.WARNING
