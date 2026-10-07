@@ -42,6 +42,14 @@ class Settings(BaseSettings):
     # scores endpoint (2 credits) at most this often while any bet is waiting on a result.
     game_duration_minutes: int = 180
     scores_min_interval_minutes: int = 30
+    # Stop spending credits on a game with no final score this long after kickoff (postponed,
+    # cancelled...); it shows up on the admin page instead, where its bets can be voided.
+    settlement_give_up_hours: int = 24
+    # Skip score checks once the API reports fewer credits than this, so the daily odds
+    # refresh still has room.
+    scores_min_credits: int = 50
+    # Background worker (app.worker): how often it refreshes odds and settles bets.
+    worker_interval_seconds: int = 900
 
 
 @lru_cache

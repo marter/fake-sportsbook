@@ -2,12 +2,18 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { adjustBalance, deleteUnverifiedUser, fetchUsers, markVerified } from "../api/admin";
+import {
+  adjustBalance,
+  deleteUnverifiedUser,
+  fetchStuckGames,
+  fetchUsers,
+  markVerified,
+} from "../api/admin";
 import type { Adjustment } from "../api/admin";
 import { extractErrorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import { Modal } from "../Modal";
-import { formatMoney, formatSignedMoney, parseDollars } from "../format";
+import { formatDateTime, formatMoney, formatSignedMoney, parseDollars } from "../format";
 import type { AdminUser } from "../types";
 
 type Mode = "add" | "remove" | "set";
@@ -172,6 +178,11 @@ export function AdminPage() {
     enabled: !!me?.is_admin,
   });
   const [editing, setEditing] = useState<AdminUser | null>(null);
+  const { data: stuck } = useQuery({
+    queryKey: ["admin-stuck-games"],
+    queryFn: fetchStuckGames,
+    enabled: !!me?.is_admin,
+  });
 
   if (!me?.is_admin) {
     return (
@@ -186,6 +197,31 @@ export function AdminPage() {
 
   return (
     <>
+      {stuck && stuck.length > 0 && (
+        <section className="attention">
+          <h2>Needs attention</h2>
+          <p className="hint">
+            No final score a day after kickoff (postponed or cancelled?), so these bets stopped
+            settling. Void them if the game won’t be played.
+          </p>
+          {stuck.map((g) => (
+            <div key={g.game_id} className="attention-game">
+              <p className="ledger-kind">
+                {g.away_team} @ {g.home_team}
+              </p>
+              <p className="hint">Kicked off {formatDateTime(g.commence_time)}</p>
+              <ul>
+                {g.open_bets.map((b) => (
+                  <li key={b.bet_id}>
+                    <Link to={`/admin/users/${b.user_id}/bets`}>{b.display_name}</Link> ·{" "}
+                    {formatMoney(b.stake_cents)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </section>
+      )}
       <h1>Users</h1>
       {error && <p className="form-error">{extractErrorMessage(error, "Couldn't load users.")}</p>}
       <ul className="admin-users">

@@ -13,6 +13,18 @@ x-logging: &logging
     max-size: "10m"
     max-file: "3"
 
+# Settings shared by the API and the background worker.
+x-backend-env: &backend-env
+  ENVIRONMENT: production
+  DATABASE_URL: postgresql+psycopg://sportsbook:${POSTGRES_PASSWORD}@db:5432/fake_sportsbook
+  JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in deploy/.env.prod}
+  ODDS_API_KEY: ${ODDS_API_KEY:-}
+  MAX_USERS: ${MAX_USERS:-5}
+  EMAIL_BACKEND: resend
+  RESEND_API_KEY: ${RESEND_API_KEY:?set in deploy/.env.prod}
+  APP_BASE_URL: https://${SPORTSBOOK_HOST}
+  CORS_ORIGINS: '["https://${SPORTSBOOK_HOST:?set in deploy/.env.prod}"]'
+
 services:
   db:
     image: postgres:16-alpine
@@ -34,23 +46,31 @@ services:
     build: ../backend
     restart: unless-stopped
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2"
-    environment:
-      ENVIRONMENT: production
-      DATABASE_URL: postgresql+psycopg://sportsbook:${POSTGRES_PASSWORD}@db:5432/fake_sportsbook
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in deploy/.env.prod}
-      ODDS_API_KEY: ${ODDS_API_KEY:-}
-      MAX_USERS: ${MAX_USERS:-5}
-      EMAIL_BACKEND: resend
-      RESEND_API_KEY: ${RESEND_API_KEY:?set in deploy/.env.prod}
-      APP_BASE_URL: https://${SPORTSBOOK_HOST}
-      CORS_ORIGINS: '["https://${SPORTSBOOK_HOST:?set in deploy/.env.prod}"]'
+    environment: *backend-env
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     networks:
       default:
       web:
         aliases: [sportsbook-backend]
+    logging: *logging
+
+  # Refreshes odds daily and settles bets every 15 minutes, so results land even when
+  # nobody has the app open. Waits for the API to be healthy (i.e. migrations have run).
+  settler:
+    build: ../backend
+    restart: unless-stopped
+    command: python -m app.worker
+    environment: *backend-env
+    depends_on:
+      backend:
+        condition: service_healthy
     logging: *logging
 
   frontend:
