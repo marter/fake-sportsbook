@@ -45,13 +45,34 @@ export function splitTeamName(name: string): [string, string] {
   return i === -1 ? ["", name] : [name.slice(0, i), name.slice(i + 1)];
 }
 
-/** Mirrors the backend's payout math: stake plus winnings, rounded down to the cent. */
+/** American odds as an exact fraction [numerator, denominator]: +150 -> 5/2, -110 -> 21/11. */
+function decimalFraction(price: number): [bigint, bigint] {
+  return price > 0
+    ? [BigInt(100 + price), 100n]
+    : [BigInt(-price + 100), BigInt(-price)];
+}
+
+/** Mirrors the backend exactly: stake times every leg's decimal odds, rounded down to the
+ * cent. One price is a single bet; several is a parlay. BigInt so 8 legs can't lose precision. */
+export function parlayPayoutCents(stakeCents: number, prices: number[]): number {
+  let num = BigInt(stakeCents);
+  let den = 1n;
+  for (const price of prices) {
+    const [n, d] = decimalFraction(price);
+    num *= n;
+    den *= d;
+  }
+  return Number(num / den);
+}
+
 export function payoutCents(stakeCents: number, priceAmerican: number): number {
-  const winnings =
-    priceAmerican > 0
-      ? Math.floor((stakeCents * priceAmerican) / 100)
-      : Math.floor((stakeCents * 100) / -priceAmerican);
-  return stakeCents + winnings;
+  return parlayPayoutCents(stakeCents, [priceAmerican]);
+}
+
+/** Combined American odds of several prices, for display (e.g. three -110s -> +596). */
+export function combinedAmericanOdds(prices: number[]): number {
+  const decimal = prices.reduce((acc, p) => acc * (p > 0 ? 1 + p / 100 : 1 + 100 / -p), 1);
+  return decimal >= 2 ? Math.round((decimal - 1) * 100) : Math.round(-100 / (decimal - 1));
 }
 
 /** "12.5" -> 1250. Returns null for anything that isn't a non-negative amount. */

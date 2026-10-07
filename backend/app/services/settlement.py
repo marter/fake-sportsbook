@@ -19,7 +19,7 @@ from app.models.bet import Bet, BetLeg, BetStatus, LegResult
 from app.models.game import Game, Market, OddsFetch
 from app.models.ledger import LedgerKind
 from app.services import odds, wallet
-from app.services.odds_math import payout_cents
+from app.services.odds_math import parlay_payout_cents
 from app.sports import BY_API_KEY, SPORTS, Sport
 
 logger = logging.getLogger(__name__)
@@ -56,22 +56,22 @@ def grade_leg(
     return LegResult.WON if margin > 0 else LegResult.LOST
 
 
-def bet_outcome(bet: Bet) -> tuple[BetStatus, int]:
-    """Final status and payout for a bet whose legs are all graded.
+def bet_outcome(bet: Bet) -> tuple[BetStatus, int] | None:
+    """Final status and payout, or None if the bet can't be decided yet.
 
-    Any lost leg loses the bet. Pushed legs drop out (they pay even money), so a single bet
-    that pushes is refunded its stake.
+    Any lost leg loses the whole bet right away, even with games still to play. Otherwise it
+    waits for every leg. Pushed legs drop out (the parlay pays as if they weren't there), so a
+    bet where every leg pushes is refunded its stake.
     """
     results = [leg.result for leg in bet.legs]
     if LegResult.LOST in results:
         return BetStatus.LOST, 0
+    if LegResult.PENDING in results:
+        return None
     if all(r == LegResult.PUSH for r in results):
         return BetStatus.PUSH, bet.stake_cents
-    payout = bet.stake_cents
-    for leg in bet.legs:
-        if leg.result == LegResult.WON:
-            payout = payout_cents(payout, leg.price_american)
-    return BetStatus.WON, payout
+    won = [leg.price_american for leg in bet.legs if leg.result == LegResult.WON]
+    return BetStatus.WON, parlay_payout_cents(bet.stake_cents, won)
 
 
 def _unfinished_games_with_open_bets(db: Session):
@@ -135,14 +135,18 @@ def _low_on_credits(db: Session) -> bool:
 
 
 def _has_settleable_bets(db: Session) -> bool:
-    """Open bets on games that already have a final score (normally settled in the same run
-    that records the score, but this catches anything left behind)."""
+    """Ungraded legs of open bets on games that already have a final score (normally graded in
+    the same run that records the score, but this catches anything left behind)."""
     return (
         db.scalars(
             select(Bet.id)
             .join(BetLeg, BetLeg.bet_id == Bet.id)
             .join(Game, Game.id == BetLeg.game_id)
-            .where(Bet.status == BetStatus.PENDING, Game.completed.is_(True))
+            .where(
+                Bet.status == BetStatus.PENDING,
+                BetLeg.result == LegResult.PENDING,
+                Game.completed.is_(True),
+            )
             .limit(1)
         ).first()
         is not None
@@ -197,7 +201,8 @@ def apply_scores(db: Session, events: list[dict[str, Any]]) -> int:
 
 
 def settle_completed(db: Session, now: datetime) -> int:
-    """Grades and pays every open bet whose games are all final. Returns bets settled."""
+    """Grades every open bet's finished legs, and settles bets that are decided: all legs
+    graded, or any leg lost. Returns bets settled."""
     # Row locks on the open bets: a concurrent run waits, then no longer sees them as pending.
     pending = db.scalars(
         select(Bet)
@@ -208,10 +213,10 @@ def settle_completed(db: Session, now: datetime) -> int:
 
     settled = 0
     for bet in pending:
-        if not all(leg.game.completed for leg in bet.legs):
-            continue
         for leg in bet.legs:
             game = leg.game
+            if leg.result != LegResult.PENDING or not game.completed:
+                continue
             assert game.home_score is not None and game.away_score is not None
             leg.result = grade_leg(
                 leg.market,
@@ -222,7 +227,10 @@ def settle_completed(db: Session, now: datetime) -> int:
                 game.home_score,
                 game.away_score,
             )
-        status, payout = bet_outcome(bet)
+        outcome = bet_outcome(bet)
+        if outcome is None:
+            continue  # a parlay still waiting on other games; graded legs are saved
+        status, payout = outcome
         bet.status = status
         bet.payout_cents = payout
         bet.settled_at = now

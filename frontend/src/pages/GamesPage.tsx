@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchGames, fetchSports } from "../api/games";
 import { extractErrorMessage } from "../api/client";
 import { GameCard } from "../GameCard";
-import { BetSlip } from "../BetSlip";
 import { useAuth } from "../auth/AuthContext";
 import { SportTabs } from "../SportTabs";
 import { setLastSport } from "../lastSport";
 import { formatDayHeading, formatTimeAgo } from "../format";
-import type { Game, Selection } from "../types";
+import type { Game } from "../types";
 
 function groupByDay(games: Game[]): [string, Game[]][] {
   const groups = new Map<string, Game[]>();
@@ -35,11 +34,6 @@ export function GamesPage() {
   useEffect(() => {
     if (sport) setLastSport(sport.slug);
   }, [sport]);
-  // Remember which league the slip was opened in, so switching tabs closes it.
-  const [picked, setPicked] = useState<{ sport: string; selection: Selection } | null>(null);
-  const selection = picked?.sport === slug ? picked.selection : null;
-  const setSelection = (next: Selection | null) =>
-    setPicked(next ? { sport: slug, selection: next } : null);
 
   // Loading games can settle finished bets server-side, so refresh the header balance.
   useEffect(() => {
@@ -85,19 +79,10 @@ export function GamesPage() {
                 key={game.id}
                 game={game}
                 spreadLabel={sport?.spread_label}
-                selectedLineId={selection?.line.id ?? null}
-                onSelect={(g, line) => setSelection({ game: g, line })}
               />
             ))}
           </section>
         ))}
-      {selection && (
-        <BetSlip
-          key={selection.line.id}
-          selection={selection}
-          onClose={() => setSelection(null)}
-        />
-      )}
     </>
   );
 }

@@ -20,6 +20,10 @@ export function VoidBetDialog({
   const queryClient = useQueryClient();
   const [note, setNote] = useState("");
   const leg = bet.legs[0];
+  const label =
+    bet.legs.length > 1
+      ? `${bet.legs.length}-pick parlay`
+      : selectionLabel(leg.market, leg.outcome, leg.point);
 
   const mutation = useMutation({
     mutationFn: () => voidBet(bet.id, note.trim() || undefined),
@@ -38,7 +42,7 @@ export function VoidBetDialog({
   return (
     <Modal title="Void bet" onClose={onClose}>
       <p>
-        Cancel {ownerName}’s <strong>{selectionLabel(leg.market, leg.outcome, leg.point)}</strong>{" "}
+        Cancel {ownerName}’s <strong>{label}</strong>{" "}
         bet and refund the {formatMoney(bet.stake_cents)} stake? This can’t be undone.
       </p>
       <label className="slip-stake">

@@ -37,13 +37,17 @@ def first_line(client: TestClient, headers: dict[str, str], market: str = "h2h")
     return {**line, "game_id": game["id"]}
 
 
-def bet_payload(line: dict[str, Any], stake_cents: int = 1_000) -> dict[str, Any]:
+def leg_payload(line: dict[str, Any]) -> dict[str, Any]:
     return {
         "odds_line_id": line["id"],
-        "stake_cents": stake_cents,
         "expected_price_american": line["price_american"],
         "expected_point": line["point"],
     }
+
+
+def bet_payload(line: dict[str, Any], stake_cents: int = 1_000) -> dict[str, Any]:
+    """A single bet on one line."""
+    return {"legs": [leg_payload(line)], "stake_cents": stake_cents}
 
 
 def balance(client: TestClient, headers: dict[str, str]) -> int:
@@ -100,10 +104,16 @@ def test_moved_line_is_rejected_with_new_price(
     client: TestClient, auth_headers: dict[str, str]
 ) -> None:
     line = first_line(client, auth_headers)
-    stale = {**bet_payload(line), "expected_price_american": line["price_american"] + 5}
+    stale = bet_payload(line)
+    stale["legs"][0]["expected_price_american"] = line["price_american"] + 5
     response = client.post("/api/bets", json=stale, headers=auth_headers)
     assert response.status_code == 409
-    assert response.json()["detail"]["price_american"] == line["price_american"]
+    [change] = response.json()["detail"]["changes"]
+    assert change == {
+        "odds_line_id": line["id"],
+        "price_american": line["price_american"],
+        "point": line["point"],
+    }
     assert balance(client, auth_headers) == 100_000
 
 

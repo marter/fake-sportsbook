@@ -7,31 +7,37 @@ export interface PlaceBetResult {
   balance_cents: number;
 }
 
-/** Thrown when the line moved between viewing it and placing the bet. */
-export class OddsChangedError extends Error {
+export interface LineChange {
+  odds_line_id: string;
   price_american: number;
   point: number | null;
+}
 
-  constructor(price_american: number, point: number | null) {
+/** Thrown when one or more lines moved between viewing them and placing the bet. */
+export class OddsChangedError extends Error {
+  changes: LineChange[];
+
+  constructor(changes: LineChange[]) {
     super("The odds have changed");
-    this.price_american = price_american;
-    this.point = point;
+    this.changes = changes;
   }
 }
 
-export async function placeBet(line: OddsLine, stakeCents: number): Promise<PlaceBetResult> {
+/** One line is a single bet; several is a parlay. */
+export async function placeBet(lines: OddsLine[], stakeCents: number): Promise<PlaceBetResult> {
   try {
     const { data } = await apiClient.post<PlaceBetResult>("/api/bets", {
-      odds_line_id: line.id,
+      legs: lines.map((line) => ({
+        odds_line_id: line.id,
+        expected_price_american: line.price_american,
+        expected_point: line.point,
+      })),
       stake_cents: stakeCents,
-      expected_price_american: line.price_american,
-      expected_point: line.point,
     });
     return data;
   } catch (err) {
     if (axios.isAxiosError(err) && err.response?.status === 409) {
-      const detail = err.response.data.detail;
-      throw new OddsChangedError(detail.price_american, detail.point);
+      throw new OddsChangedError(err.response.data.detail.changes);
     }
     throw err;
   }

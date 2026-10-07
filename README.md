@@ -82,6 +82,11 @@ npm run dev
   checks are due. Score checks stop for a game with no final score 24h after kickoff (it's
   listed under "Needs attention" on the admin page for voiding) and pause when fewer than 50
   API credits are left.
+- **Parlays**: a bet has 1–8 legs (one is a single, two or more a parlay), one pick per game.
+  Payout multiplies the legs' decimal odds exactly (`services/odds_math.py`, mirrored in the
+  frontend with BigInt). Legs are graded as their games finish; a parlay loses as soon as any
+  leg loses, a pushed leg drops out, and it pays once every leg is graded. The bet slip is
+  app-wide state (`frontend/src/betslip/`), so picks survive switching league tabs.
 - **Settlement**: also on demand. Loading bets or games checks whether any open bet is
   waiting on a game that kicked off over `GAME_DURATION_MINUTES` (180) ago; if so, it calls
   the scores endpoint (2 credits) at most every `SCORES_MIN_INTERVAL_MINUTES` (30), records
