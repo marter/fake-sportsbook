@@ -67,7 +67,7 @@ npm run dev
   verified by the migration.
 - **Admins** can list users and adjust balances (recorded as ledger entries with a note).
   Admin is granted only from the server: `python -m app.cli make-admin <email>`.
-- **Odds**: cached in Postgres for a week (`ODDS_CACHE_HOURS`, default 168). There's no
+- **Odds**: cached in Postgres for a day (`ODDS_CACHE_HOURS`, default 24). There's no
   background worker. `GET /api/games` checks the cache, and if it's stale, makes one call to
   The Odds API (NFL, DraftKings, moneyline/spread/total, about 3 credits). If that call
   fails, the API serves the stale odds. The frontend never calls The Odds API directly.

@@ -58,7 +58,7 @@ export function GamesPage() {
         ))}
       {data?.odds_updated_at && (
         <p className="hint odds-footnote">
-          Odds updated {formatTimeAgo(data.odds_updated_at)}. They refresh weekly.
+          Odds updated {formatTimeAgo(data.odds_updated_at)}. They refresh daily.
         </p>
       )}
       {selection && (

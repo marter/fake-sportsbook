@@ -61,7 +61,7 @@ class OddsLine(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 class OddsFetch(UUIDPrimaryKeyMixin, Base):
     """One call to The Odds API (or fixture load). The latest row per sport and kind drives
-    caching: the weekly odds refresh and the scores throttle each look only at their own kind.
+    caching: the daily odds refresh and the scores throttle each look only at their own kind.
     """
 
     __tablename__ = "odds_fetches"
