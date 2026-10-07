@@ -10,3 +10,4 @@ class UserRead(BaseModel):
     email: EmailStr
     display_name: str
     balance_cents: int
+    is_admin: bool

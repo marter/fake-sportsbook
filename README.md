@@ -56,7 +56,11 @@ npm run dev
 
 - **Auth**: JWT bearer tokens, one global user. No orgs or tenants (yet).
 - **Money**: integer cents everywhere (`balance_cents`). New accounts get
-  `STARTING_BALANCE_CENTS` (default $1,000).
+  `STARTING_BALANCE_CENTS` (default $1,000). Every balance change writes a `LedgerEntry`
+  (via `app/services/wallet.py`) while holding a row lock on the user, so a user's ledger
+  always sums to their balance and concurrent bets can't overspend.
+- **Admins** can list users and adjust balances (recorded as ledger entries with a note).
+  Admin is granted only from the server: `python -m app.cli make-admin <email>`.
 - **Odds**: cached in Postgres for a week (`ODDS_CACHE_HOURS`, default 168). There's no
   background worker. `GET /api/games` checks the cache, and if it's stale, makes one call to
   The Odds API (NFL, DraftKings, moneyline/spread/total, about 3 credits). If that call
@@ -69,7 +73,8 @@ npm run dev
 
 1. ~~Scaffold: auth, mobile shell, migrations~~
 2. ~~NFL odds: weekly cache, fixture mode, games list~~
-3. Betting: wallet ledger, bet placement with row locking and line-move checks, bet slip
+3. ~~Betting: wallet ledger, bet placement with row locking and line-move checks, bet slip,
+   admin balance adjustments~~
 4. Settlement: scores (short cache, only for started games with pending bets), grading, payouts
 5. Polish: leaderboard, daily top-up, PWA
 

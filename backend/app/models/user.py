@@ -12,6 +12,9 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     display_name: Mapped[str] = mapped_column(String(50), nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
+    # Can view all users and adjust balances. Only granted from the server CLI
+    # (python -m app.cli make-admin <email>), never through the API.
+    is_admin: Mapped[bool] = mapped_column(default=False, server_default="false")
     # Play money, always in integer cents. Only change this inside a transaction that holds a
     # row lock (SELECT ... FOR UPDATE) and writes a matching ledger entry (phase 3).
     balance_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)

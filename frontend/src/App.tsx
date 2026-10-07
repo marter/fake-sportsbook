@@ -7,6 +7,7 @@ import { GamesPage } from "./pages/GamesPage";
 import { MyBetsPage } from "./pages/MyBetsPage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
 import { AccountPage } from "./pages/AccountPage";
+import { AdminPage } from "./pages/AdminPage";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/bets" element={<MyBetsPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
