@@ -417,6 +417,7 @@ input:focus-visible {
 }
 
 .game-row--header {
+  position: relative;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -480,6 +481,75 @@ input:focus-visible {
 .odds-price {
   font-weight: 650;
   color: var(--text-h);
+}
+
+/* Spread / Total / Money headers: tap to explain. "display: contents" lets the buttons sit
+   in the parent .game-row grid while the wrapper still owns the outside-tap check. */
+.market-headers {
+  display: contents;
+}
+
+button.market-header {
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+button.market-header:hover:not(:disabled) {
+  opacity: 1;
+  color: var(--text-h);
+}
+
+button.market-header[aria-expanded="true"] {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.market-header-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.market-tip {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.market-tip strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-h);
+  font-weight: 650;
 }
 
 .odds-footnote {
