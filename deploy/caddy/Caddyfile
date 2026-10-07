@@ -16,14 +16,12 @@
 	}
 }
 
-# Add volunteer-scheduler later, the same way:
-#
-# volunteer.martinteran.me {
-# 	encode zstd gzip
-# 	handle /api/* {
-# 		reverse_proxy volunteer-backend:8000
-# 	}
-# 	handle {
-# 		reverse_proxy volunteer-frontend:80
-# 	}
-# }
+volunteer.martinteran.me {
+	encode zstd gzip
+	handle /api/* {
+		reverse_proxy volunteer-backend:8000
+	}
+	handle {
+		reverse_proxy volunteer-frontend:80
+	}
+}
