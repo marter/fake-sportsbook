@@ -6,6 +6,7 @@ only calls the API when the newest cached fetch is older than `odds_cache_hours`
 
 import json
 import logging
+import math
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -44,10 +45,16 @@ def fetch_events_from_api() -> tuple[list[dict[str, Any]], int | None]:
 
 
 def load_fixture_events(now: datetime) -> list[dict[str, Any]]:
-    """Loads saved sample events, shifted so the earliest game kicks off a day from `now`."""
+    """Loads saved sample events, moved forward by whole weeks so they're upcoming.
+
+    Shifting by whole weeks keeps each game on its real weekday and kickoff time
+    (Sunday 1pm stays Sunday 1pm, Thursday night stays Thursday night).
+    """
     events: list[dict[str, Any]] = json.loads(FIXTURE_PATH.read_text())
     earliest = min(_parse_time(e["commence_time"]) for e in events)
-    shift = (now + timedelta(days=1)).replace(minute=0, second=0, microsecond=0) - earliest
+    week = timedelta(weeks=1)
+    weeks_behind = max(0, math.ceil((now - earliest) / week))
+    shift = weeks_behind * week
     for event in events:
         shifted = _parse_time(event["commence_time"]) + shift
         event["commence_time"] = shifted.isoformat()
