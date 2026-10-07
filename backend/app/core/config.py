@@ -1,6 +1,8 @@
 from functools import lru_cache
+from typing import Annotated
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -33,8 +35,9 @@ class Settings(BaseSettings):
     # The Odds API. With no key set, odds load from fixtures/nfl_odds.json instead.
     odds_api_key: str = ""
     odds_api_base_url: str = "https://api.the-odds-api.com/v4"
-    # Leagues offered (see app/sports.py). Out-of-season ones show as dimmed tabs.
-    enabled_sports: list[str] = ["nfl", "nba", "mlb", "wnba"]
+    # Leagues offered (see app/sports.py), e.g. ENABLED_SPORTS=nfl,nba,mlb. Out-of-season
+    # ones show as dimmed tabs; leave one out entirely to hide its tab and never fetch it.
+    enabled_sports: Annotated[list[str], NoDecode] = ["nfl", "nba", "mlb", "wnba"]
     odds_bookmaker: str = "draftkings"
     # Odds are refetched at most this often. Each refetch costs 3 credits (3 markets), so
     # daily is ~90 of the free plan's 500 monthly credits.
@@ -50,6 +53,14 @@ class Settings(BaseSettings):
     scores_min_credits: int = 50
     # Background worker (app.worker): how often it refreshes odds and settles bets.
     worker_interval_seconds: int = 900
+
+
+    @field_validator("enabled_sports", mode="before")
+    @classmethod
+    def _split_sports(cls, value: object) -> object:
+        if isinstance(value, str):
+            return [s.strip().lower() for s in value.split(",") if s.strip()]
+        return value
 
 
 @lru_cache

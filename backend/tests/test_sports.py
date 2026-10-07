@@ -137,3 +137,15 @@ def test_fixture_scores_never_tie_outside_football(db: Session) -> None:
             )
             home, away = (int(s["score"]) for s in settlement.fixture_scores([game])[0]["scores"])
             assert home != away
+
+
+def test_enabled_sports_setting_hides_a_league(
+    client: TestClient, auth_headers: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.core.config import Settings
+
+    assert Settings(enabled_sports="nfl, NBA,mlb").enabled_sports == ["nfl", "nba", "mlb"]
+    monkeypatch.setattr(get_settings(), "enabled_sports", ["nfl", "nba", "mlb"])
+    slugs = [s["slug"] for s in client.get("/api/sports", headers=auth_headers).json()]
+    assert slugs == ["nfl", "nba", "mlb"]
+    assert client.get("/api/games?sport=wnba", headers=auth_headers).status_code == 404

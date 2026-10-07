@@ -20,6 +20,7 @@ x-backend-env: &backend-env
   JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in deploy/.env.prod}
   ODDS_API_KEY: ${ODDS_API_KEY:-}
   MAX_USERS: ${MAX_USERS:-5}
+  ENABLED_SPORTS: ${ENABLED_SPORTS:-nfl,nba,mlb,wnba}
   EMAIL_BACKEND: resend
   RESEND_API_KEY: ${RESEND_API_KEY:?set in deploy/.env.prod}
   APP_BASE_URL: https://${SPORTSBOOK_HOST}
