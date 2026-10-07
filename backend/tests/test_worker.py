@@ -52,13 +52,13 @@ def test_worker_cycle_refreshes_odds_and_settles(
     # finished game by then (fixture mode would instead move it back into the future).
     db.execute(update(OddsFetch).values(fetched_at=datetime.now(UTC) - timedelta(days=2)))
     db.commit()
-    monkeypatch.setattr(odds, "load_fixture_events", lambda now: [])
+    monkeypatch.setattr(odds, "load_fixture_events", lambda sport, now: [])
 
     worker.run_once()
 
     db.expire_all()
     assert db.get(Bet, bet["id"]).status != BetStatus.PENDING
-    latest = odds.latest_fetch(db, get_settings().odds_sport_key)
+    latest = odds.latest_fetch(db, "americanfootball_nfl")
     assert latest is not None and datetime.now(UTC) - latest.fetched_at < timedelta(minutes=1)
 
 
@@ -66,12 +66,13 @@ def test_worker_cycle_with_nothing_due_spends_nothing(
     db: Session, engine, client: TestClient, auth_headers: dict[str, str], monkeypatch
 ) -> None:
     monkeypatch.setattr(worker, "SessionLocal", sessionmaker(bind=engine))
-    client.get("/api/games", headers=auth_headers)  # fresh odds
     calls = final_score(monkeypatch, 1, 0)
-    worker.run_once()
+    worker.run_once()  # first cycle loads each in-season sport's odds once
+    in_season = db.scalar(select(func.count()).select_from(OddsFetch))
     worker.run_once()
     assert calls == []
-    assert db.scalar(select(func.count()).select_from(OddsFetch)) == 1
+    assert db.scalar(select(func.count()).select_from(OddsFetch)) == in_season
+    assert in_season == 3  # sample data exists for NFL, NBA and MLB; WNBA counts as off-season
 
 
 def test_gives_up_after_a_day_and_lists_game_for_admin(
@@ -116,7 +117,7 @@ def test_score_checks_pause_when_low_on_credits(
     start_game(db, game["id"])
     db.add(
         OddsFetch(
-            sport_key=get_settings().odds_sport_key,
+            sport_key="americanfootball_nfl",
             kind="odds",
             fetched_at=datetime.now(UTC),
             source="api",
@@ -128,7 +129,7 @@ def test_score_checks_pause_when_low_on_credits(
     monkeypatch.setattr(get_settings(), "odds_api_key", "test-key")
     calls: list[int] = []
 
-    def fake_scores():
+    def fake_scores(sport):
         calls.append(1)
         return [], credits_left - 2
 

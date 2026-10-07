@@ -65,17 +65,18 @@ function TeamRow({ game, team, totalSide, selectedLineId, onSelect }: RowProps) 
 
 interface GameCardProps {
   game: Game;
+  spreadLabel?: string;
   selectedLineId: string | null;
   onSelect: (game: Game, line: OddsLine) => void;
 }
 
-export function GameCard({ game, selectedLineId, onSelect }: GameCardProps) {
+export function GameCard({ game, spreadLabel, selectedLineId, onSelect }: GameCardProps) {
   const select = (line: OddsLine) => onSelect(game, line);
   return (
     <article className="game-card">
       <div className="game-row game-row--header">
         <span className="game-kickoff">{formatKickoff(game.commence_time)}</span>
-        <MarketHeaders />
+        <MarketHeaders spreadLabel={spreadLabel} />
       </div>
       <TeamRow
         game={game}

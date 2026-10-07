@@ -26,6 +26,15 @@ class GameRead(BaseModel):
     odds_lines: list[OddsLineRead]
 
 
+class SportRead(BaseModel):
+    slug: str
+    name: str
+    in_season: bool
+    upcoming_games: int
+    spread_label: str
+    season_note: str
+
+
 class GamesResponse(BaseModel):
     odds_updated_at: datetime | None
     games: list[GameRead]

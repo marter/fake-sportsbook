@@ -34,8 +34,13 @@ export function formatTimeAgo(iso: string): string {
   return relative.format(-Math.round(hours / 24), "day");
 }
 
-/** "San Francisco 49ers" -> ["San Francisco", "49ers"] */
+// Team names whose nickname is more than one word.
+const MULTI_WORD_NICKNAMES = ["Red Sox", "White Sox", "Blue Jays", "Trail Blazers"];
+
+/** "San Francisco 49ers" -> ["San Francisco", "49ers"], "Boston Red Sox" -> ["Boston", "Red Sox"] */
 export function splitTeamName(name: string): [string, string] {
+  const multi = MULTI_WORD_NICKNAMES.find((n) => name.endsWith(` ${n}`));
+  if (multi) return [name.slice(0, -multi.length - 1), multi];
   const i = name.lastIndexOf(" ");
   return i === -1 ? ["", name] : [name.slice(0, i), name.slice(i + 1)];
 }

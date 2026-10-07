@@ -1,6 +1,6 @@
 # Fake Sportsbook
 
-A play-money NFL betting app, built mobile-first for the web. Odds come from
+A play-money betting app for the NFL, NBA, MLB and WNBA, built mobile-first for the web. Odds come from
 [The Odds API](https://the-odds-api.com). Nothing here involves real money.
 
 Stack and conventions follow `volunteer-scheduler`.
@@ -67,7 +67,12 @@ npm run dev
   verified by the migration.
 - **Admins** can list users and adjust balances (recorded as ledger entries with a note).
   Admin is granted only from the server: `python -m app.cli make-admin <email>`.
-- **Odds**: cached in Postgres for a day (`ODDS_CACHE_HOURS`, default 24). There's no
+- **Sports**: defined in `backend/app/sports.py` (API key, name, typical game length, what
+  the spread is called, off-season note) and switched on with `ENABLED_SPORTS`. Each league is
+  a tab on the Games page (`/games/nba`). Leagues out of season (per The Odds API's free
+  `/sports` list, checked every 6 hours) show as dimmed tabs and are never fetched. Sample
+  data for local dev lives in `backend/fixtures/<sport>_odds.json`.
+- **Odds**: cached in Postgres for a day per sport (`ODDS_CACHE_HOURS`, default 24). There's no
   background worker. `GET /api/games` checks the cache, and if it's stale, makes one call to
   The Odds API (NFL, DraftKings, moneyline/spread/total, about 3 credits). If that call
   fails, the API serves the stale odds. The frontend never calls The Odds API directly.

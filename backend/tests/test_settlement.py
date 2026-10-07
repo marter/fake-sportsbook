@@ -192,7 +192,7 @@ def test_scores_fetch_is_throttled_while_game_unfinished(
     client.get("/api/bets", headers=auth_headers)
     assert len(calls) == 2
     # The odds cache is untouched by score fetches.
-    assert odds.latest_fetch(db, get_settings().odds_sport_key).kind == "odds"
+    assert odds.latest_fetch(db, "americanfootball_nfl").kind == "odds"
 
 
 def test_api_failure_leaves_bets_open(
@@ -202,7 +202,7 @@ def test_api_failure_leaves_bets_open(
     start_game(db, game["id"])
     monkeypatch.setattr(get_settings(), "odds_api_key", "test-key")
 
-    def down():
+    def down(sport):
         raise httpx.ConnectError("down")
 
     monkeypatch.setattr(odds, "fetch_scores_from_api", down)
@@ -228,7 +228,7 @@ def test_api_mode_uses_scores_endpoint(
         },
         {"id": "someone-elses-game", "completed": True, "scores": []},
     ]
-    monkeypatch.setattr(odds, "fetch_scores_from_api", lambda: (events, 450))
+    monkeypatch.setattr(odds, "fetch_scores_from_api", lambda sport: (events, 450))
 
     settled = client.get("/api/bets?state=settled", headers=auth_headers).json()
     expected = "won" if line["outcome"] == db_game.home_team else "lost"

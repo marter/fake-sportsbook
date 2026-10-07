@@ -27,6 +27,7 @@ export function BetCard({ bet, actions }: { bet: Bet; actions?: ReactNode }) {
         <div>
           <p className="slip-label">{selectionLabel(leg.market, leg.outcome, leg.point)}</p>
           <p className="hint">
+            <span className="sport-tag">{game.sport.toUpperCase()}</span>
             {game.away_team} @ {game.home_team}
           </p>
         </div>

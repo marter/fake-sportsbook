@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
 from app.models.base import TimestampMixin, UUIDPrimaryKeyMixin
+from app.sports import BY_API_KEY
 
 
 class Market(enum.StrEnum):
@@ -35,6 +36,12 @@ class Game(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     odds_lines: Mapped[list["OddsLine"]] = relationship(
         back_populates="game", cascade="all, delete-orphan", lazy="raise"
     )
+
+    @property
+    def sport(self) -> str:
+        """Our short slug for the league ("nfl", "nba", ...)."""
+        known = BY_API_KEY.get(self.sport_key)
+        return known.slug if known else self.sport_key
 
 
 class OddsLine(UUIDPrimaryKeyMixin, TimestampMixin, Base):

@@ -10,6 +10,7 @@ import { AccountPage } from "./pages/AccountPage";
 import { AdminPage } from "./pages/AdminPage";
 import { UserBetsPage } from "./pages/UserBetsPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
+import { RedirectToLastSport } from "./RedirectToLastSport";
 
 export default function App() {
   return (
@@ -19,7 +20,9 @@ export default function App() {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route path="/" element={<GamesPage />} />
+          <Route path="/" element={<RedirectToLastSport />} />
+          <Route path="/games" element={<RedirectToLastSport />} />
+          <Route path="/games/:sport" element={<GamesPage />} />
           <Route path="/bets" element={<MyBetsPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/account" element={<AccountPage />} />

@@ -37,6 +37,7 @@ export type LegResult = "pending" | "won" | "lost" | "push";
 
 export interface BetGame {
   id: string;
+  sport: string;
   home_team: string;
   away_team: string;
   commence_time: string;
@@ -116,4 +117,13 @@ export interface StuckGame {
   away_team: string;
   commence_time: string;
   open_bets: { bet_id: string; user_id: string; display_name: string; stake_cents: number }[];
+}
+
+export interface Sport {
+  slug: string;
+  name: string;
+  in_season: boolean;
+  upcoming_games: number;
+  spread_label: string;
+  season_note: string;
 }

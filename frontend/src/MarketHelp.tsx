@@ -1,16 +1,28 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { Market } from "./types";
 
-const MARKETS: { market: Market; label: string; title: string; body: string }[] = [
-  {
-    market: "spreads",
-    label: "Spread",
-    title: "Point spread",
-    body:
-      "Bet on the margin of victory. The favorite (−) has to win by more than the number; " +
-      "the underdog (+) can lose by less than it, or win outright. −3.5 means win by 4 or more. " +
-      "The number below is the price.",
-  },
+type MarketInfo = { market: Market; label: string; title: string; body: string };
+
+const POINT_SPREAD: MarketInfo = {
+  market: "spreads",
+  label: "Spread",
+  title: "Point spread",
+  body:
+    "Bet on the margin of victory. The favorite (−) has to win by more than the number; " +
+    "the underdog (+) can lose by less than it, or win outright. −3.5 means win by 4 or more. " +
+    "The number below is the price.",
+};
+
+const RUN_LINE: MarketInfo = {
+  market: "spreads",
+  label: "Run line",
+  title: "Run line",
+  body:
+    "Baseball’s spread, almost always 1.5 runs. The favorite (−1.5) has to win by 2 or more; " +
+    "the underdog (+1.5) can lose by 1 or win outright. The number below is the price.",
+};
+
+const OTHER_MARKETS: MarketInfo[] = [
   {
     market: "totals",
     label: "Total",
@@ -33,7 +45,8 @@ const MARKETS: { market: Market; label: string; title: string; body: string }[] 
  * The Spread / Total / Money column headers. Tapping one shows what that bet means. These
  * are tap-to-toggle rather than hover tooltips, since hover doesn't exist on phones.
  */
-export function MarketHeaders() {
+export function MarketHeaders({ spreadLabel = "Spread" }: { spreadLabel?: string }) {
+  const MARKETS = [spreadLabel === "Run line" ? RUN_LINE : POINT_SPREAD, ...OTHER_MARKETS];
   const [open, setOpen] = useState<Market | null>(null);
   const rowRef = useRef<HTMLDivElement>(null);
   const tipId = useId();

@@ -20,6 +20,7 @@ from app.models.game import Game, Market, OddsFetch
 from app.models.ledger import LedgerKind
 from app.services import odds, wallet
 from app.services.odds_math import payout_cents
+from app.sports import BY_API_KEY, SPORTS, Sport
 
 logger = logging.getLogger(__name__)
 
@@ -83,18 +84,27 @@ def _unfinished_games_with_open_bets(db: Session):
     )
 
 
+def _sport_of(game: Game) -> Sport:
+    return BY_API_KEY.get(game.sport_key, SPORTS[0])
+
+
 def _games_awaiting_result(db: Session, now: datetime) -> list[Game]:
-    """Games with open bets that should be over by now but aren't past the give-up window."""
+    """Games with open bets that should be over by now (by their sport's usual length) but
+    aren't past the give-up window."""
     settings = get_settings()
-    should_be_over = now - timedelta(minutes=settings.game_duration_minutes)
+    shortest = min(s.game_minutes for s in SPORTS)
     give_up = now - timedelta(hours=settings.settlement_give_up_hours)
-    return list(
-        db.scalars(
-            _unfinished_games_with_open_bets(db).where(
-                Game.commence_time <= should_be_over, Game.commence_time > give_up
-            )
-        ).all()
-    )
+    candidates = db.scalars(
+        _unfinished_games_with_open_bets(db).where(
+            Game.commence_time <= now - timedelta(minutes=shortest),
+            Game.commence_time > give_up,
+        )
+    ).all()
+    return [
+        g
+        for g in candidates
+        if g.commence_time <= now - timedelta(minutes=_sport_of(g).game_minutes)
+    ]
 
 
 def stuck_games(db: Session) -> list[Game]:
@@ -139,18 +149,27 @@ def _has_settleable_bets(db: Session) -> bool:
     )
 
 
+# Plausible (lowest, spread) of final scores per sport, for made-up fixture results.
+FIXTURE_SCORE_RANGE = {"nfl": (10, 28), "nba": (95, 35), "wnba": (68, 30), "mlb": (0, 10)}
+
+
 def fixture_scores(games: list[Game]) -> list[dict[str, Any]]:
     """Made-up but stable final scores, in the scores API's shape, for running without a key."""
     events = []
     for game in games:
+        sport = _sport_of(game)
+        low, spread = FIXTURE_SCORE_RANGE.get(sport.slug, (10, 28))
         digest = hashlib.sha256(game.external_id.encode()).digest()
+        home, away = low + digest[0] % spread, low + digest[1] % spread
+        if home == away and sport.slug != "nfl":
+            home += 1  # only football can end in a tie
         events.append(
             {
                 "id": game.external_id,
                 "completed": True,
                 "scores": [
-                    {"name": game.home_team, "score": str(10 + digest[0] % 28)},
-                    {"name": game.away_team, "score": str(10 + digest[1] % 28)},
+                    {"name": game.home_team, "score": str(home)},
+                    {"name": game.away_team, "score": str(away)},
                 ],
             }
         )
@@ -228,38 +247,45 @@ def settle_if_due(db: Session, *, force_fetch: bool = False) -> int:
 
     db.execute(text("SELECT pg_advisory_xact_lock(hashtext('settlement'))"))
     awaiting = _games_awaiting_result(db, now)  # another request may have just settled them
-    last = odds.latest_fetch(db, settings.odds_sport_key, kind="scores")
-    throttled = last is not None and now - last.fetched_at < timedelta(
-        minutes=settings.scores_min_interval_minutes
-    )
 
     low_credits = settings.odds_api_key and _low_on_credits(db)
     if awaiting and low_credits:
         logger.warning(
             "Skipping score check: under %d API credits left", settings.scores_min_credits
         )
-    if awaiting and not low_credits and (force_fetch or not throttled):
+    by_sport: dict[Sport, list[Game]] = {}
+    for game in awaiting:
+        by_sport.setdefault(_sport_of(game), []).append(game)
+    for sport, games in by_sport.items():
+        if low_credits:
+            break
+        last = odds.latest_fetch(db, sport.api_key, kind="scores")
+        throttled = last is not None and now - last.fetched_at < timedelta(
+            minutes=settings.scores_min_interval_minutes
+        )
+        if throttled and not force_fetch:
+            continue
         try:
             if settings.odds_api_key:
-                events, remaining = odds.fetch_scores_from_api()
+                events, remaining = odds.fetch_scores_from_api(sport)
                 source = "api"
             else:
-                events, remaining = fixture_scores(awaiting), None
+                events, remaining = fixture_scores(games), None
                 source = "fixture"
         except httpx.HTTPError:
-            logger.exception("The Odds API scores request failed; will retry later")
-        else:
-            apply_scores(db, events)
-            db.add(
-                OddsFetch(
-                    sport_key=settings.odds_sport_key,
-                    kind="scores",
-                    fetched_at=now,
-                    source=source,
-                    event_count=len(events),
-                    requests_remaining=remaining,
-                )
+            logger.exception("The Odds API %s scores request failed; will retry", sport.name)
+            continue
+        apply_scores(db, events)
+        db.add(
+            OddsFetch(
+                sport_key=sport.api_key,
+                kind="scores",
+                fetched_at=now,
+                source=source,
+                event_count=len(events),
+                requests_remaining=remaining,
             )
+        )
 
     settled = settle_completed(db, now)
     db.commit()
