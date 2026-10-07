@@ -92,10 +92,14 @@ def test_admin_can_view_another_users_bets(client: TestClient, db: Session) -> N
     client.post(
         "/api/bets",
         json={
-            "odds_line_id": line["id"],
+            "legs": [
+                {
+                    "odds_line_id": line["id"],
+                    "expected_price_american": line["price_american"],
+                    "expected_point": line["point"],
+                }
+            ],
             "stake_cents": 1_500,
-            "expected_price_american": line["price_american"],
-            "expected_point": line["point"],
         },
         headers=pat,
     )
@@ -132,10 +136,14 @@ def place_bet(client: TestClient, headers: dict[str, str], stake: int = 2_000) -
     return client.post(
         "/api/bets",
         json={
-            "odds_line_id": line["id"],
+            "legs": [
+                {
+                    "odds_line_id": line["id"],
+                    "expected_price_american": line["price_american"],
+                    "expected_point": line["point"],
+                }
+            ],
             "stake_cents": stake,
-            "expected_price_american": line["price_american"],
-            "expected_point": line["point"],
         },
         headers=headers,
     ).json()["bet"]

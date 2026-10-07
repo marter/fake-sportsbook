@@ -5,53 +5,109 @@ import { Modal } from "./Modal";
 import { useAuth } from "./auth/AuthContext";
 import { OddsChangedError, placeBet } from "./api/bets";
 import { extractErrorMessage } from "./api/client";
+import { useBetSlip } from "./betslip/BetSlipContext";
 import {
+  combinedAmericanOdds,
   formatAmericanOdds,
   formatDateTime,
   formatMoney,
+  parlayPayoutCents,
   parseDollars,
-  payoutCents,
   selectionLabel,
 } from "./format";
-import type { Selection } from "./types";
 
 const QUICK_STAKES = [500, 1_000, 2_500, 5_000];
 const MIN_STAKE_CENTS = 100;
 
-export function BetSlip({ selection, onClose }: { selection: Selection; onClose: () => void }) {
+interface Placed {
+  stake: number;
+  payout: number;
+  label: string;
+  odds: number;
+}
+
+/** The bet slip sheet: one pick is a single bet, two or more is a parlay. */
+export function BetSlip() {
   const { me, refreshMe } = useAuth();
   const queryClient = useQueryClient();
-  const [line, setLine] = useState(selection.line);
+  const slip = useBetSlip();
   const [stakeText, setStakeText] = useState("10");
   const [oddsChanged, setOddsChanged] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPlacing, setIsPlacing] = useState(false);
-  const [placed, setPlaced] = useState(false);
+  const [placed, setPlaced] = useState<Placed | null>(null);
 
-  const { game } = selection;
+  const close = () => {
+    setPlaced(null);
+    slip.close();
+  };
+
+  if (placed) {
+    return (
+      <Modal title="Bet placed" onClose={close}>
+        <div className="slip-confirm">
+          <p className="slip-confirm-check" aria-hidden="true">
+            ✓
+          </p>
+          <p>
+            <strong>{placed.label}</strong> at {formatAmericanOdds(placed.odds)}
+          </p>
+          <p className="hint">
+            {formatMoney(placed.stake)} to win {formatMoney(placed.payout - placed.stake)}
+          </p>
+        </div>
+        <div className="slip-actions">
+          <Link to="/bets" className="btn-link btn-secondary-link" onClick={close}>
+            View my bets
+          </Link>
+          <button type="button" onClick={close}>
+            Done
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
+  const picks = slip.picks;
+  const prices = picks.map((p) => p.line.price_american);
+  const isParlay = picks.length > 1;
+  const odds = isParlay ? combinedAmericanOdds(prices) : (prices[0] ?? 0);
   const balance = me?.balance_cents ?? 0;
   const stake = parseDollars(stakeText);
-  const payout = stake ? payoutCents(stake, line.price_american) : 0;
+  const payout = stake ? parlayPayoutCents(stake, prices) : 0;
   const stakeProblem =
     stake === null || stake < MIN_STAKE_CENTS
       ? `Minimum stake is ${formatMoney(MIN_STAKE_CENTS)}`
       : stake > balance
         ? "That's more than your balance"
         : null;
+  const title = isParlay ? `${picks.length}-pick parlay` : "Bet slip";
+  const summaryLabel = isParlay
+    ? `${picks.length}-pick parlay`
+    : picks[0]
+      ? selectionLabel(picks[0].line.market, picks[0].line.outcome, picks[0].line.point)
+      : "";
 
   async function submit() {
-    if (stake === null || stakeProblem) return;
+    if (stake === null || stakeProblem || picks.length === 0) return;
     setError(null);
     setIsPlacing(true);
     try {
-      await placeBet(line, stake);
-      setPlaced(true);
+      await placeBet(
+        picks.map((p) => p.line),
+        stake,
+      );
+      setPlaced({ stake, payout, label: summaryLabel, odds });
+      slip.clear();
+      setOddsChanged(false);
       await refreshMe();
       queryClient.invalidateQueries({ queryKey: ["bets"] });
       queryClient.invalidateQueries({ queryKey: ["ledger"] });
     } catch (err) {
       if (err instanceof OddsChangedError) {
-        setLine({ ...line, price_american: err.price_american, point: err.point });
+        for (const c of err.changes) {
+          slip.updateLine(c.odds_line_id, { price_american: c.price_american, point: c.point });
+        }
         setOddsChanged(true);
         queryClient.invalidateQueries({ queryKey: ["games"] });
       } else {
@@ -62,50 +118,40 @@ export function BetSlip({ selection, onClose }: { selection: Selection; onClose:
     }
   }
 
-  const label = selectionLabel(line.market, line.outcome, line.point);
-
-  if (placed && stake !== null) {
-    return (
-      <Modal title="Bet placed" onClose={onClose}>
-        <div className="slip-confirm">
-          <p className="slip-confirm-check" aria-hidden="true">
-            ✓
-          </p>
-          <p>
-            <strong>{label}</strong> at {formatAmericanOdds(line.price_american)}
-          </p>
-          <p className="hint">
-            {formatMoney(stake)} to win {formatMoney(payout - stake)}
-          </p>
-        </div>
-        <div className="slip-actions">
-          <Link to="/bets" className="btn-link btn-secondary-link" onClick={onClose}>
-            View my bets
-          </Link>
-          <button type="button" onClick={onClose}>
-            Done
-          </button>
-        </div>
-      </Modal>
-    );
-  }
-
   return (
-    <Modal title="Bet slip" onClose={onClose}>
-      <div className="slip-selection">
-        <div>
-          <p className="slip-label">{label}</p>
-          <p className="hint">
-            {game.away_team} @ {game.home_team} · {formatDateTime(game.commence_time)}
-          </p>
-        </div>
-        <span className="slip-price">{formatAmericanOdds(line.price_american)}</span>
-      </div>
+    <Modal title={title} onClose={close}>
+      <ul className="slip-picks">
+        {picks.map(({ game, line }) => (
+          <li key={line.id}>
+            <div className="slip-pick-text">
+              <p className="slip-label">{selectionLabel(line.market, line.outcome, line.point)}</p>
+              <p className="hint">
+                {game.away_team} @ {game.home_team} · {formatDateTime(game.commence_time)}
+              </p>
+            </div>
+            <span className="slip-price">{formatAmericanOdds(line.price_american)}</span>
+            <button
+              type="button"
+              className="slip-remove"
+              aria-label={`Remove ${selectionLabel(line.market, line.outcome, line.point)}`}
+              onClick={() => slip.remove(line.id)}
+            >
+              ×
+            </button>
+          </li>
+        ))}
+      </ul>
+      {isParlay ? (
+        <p className="hint">
+          Every pick has to win. If any loses, the parlay loses; a pushed pick drops out.
+        </p>
+      ) : (
+        <p className="hint">Add more picks from other games to make it a parlay.</p>
+      )}
 
       {oddsChanged && (
         <p className="slip-notice" role="status">
-          The odds changed: now <strong>{label}</strong> at{" "}
-          {formatAmericanOdds(line.price_american)}. Check the new payout before placing.
+          Some odds changed since you picked them. Check the new prices before placing.
         </p>
       )}
 
@@ -118,7 +164,6 @@ export function BetSlip({ selection, onClose }: { selection: Selection; onClose:
             autoComplete="off"
             value={stakeText}
             onChange={(e) => setStakeText(e.target.value)}
-            aria-describedby="slip-stake-hint"
           />
         </div>
       </label>
@@ -143,20 +188,21 @@ export function BetSlip({ selection, onClose }: { selection: Selection; onClose:
         </button>
       </div>
 
-      <dl className="slip-summary" id="slip-stake-hint">
+      <dl className="slip-summary">
+        <div>
+          <dt>Odds</dt>
+          <dd>{picks.length ? formatAmericanOdds(odds) : "–"}</dd>
+        </div>
         <div>
           <dt>To win</dt>
           <dd>{stakeProblem ? "–" : formatMoney(payout - (stake ?? 0))}</dd>
         </div>
         <div>
-          <dt>Total payout</dt>
+          <dt>Payout</dt>
           <dd>{stakeProblem ? "–" : formatMoney(payout)}</dd>
         </div>
-        <div>
-          <dt>Balance</dt>
-          <dd>{formatMoney(balance)}</dd>
-        </div>
       </dl>
+      <p className="hint">Balance {formatMoney(balance)}</p>
 
       {stakeText !== "" && stakeProblem && <p className="form-error">{stakeProblem}</p>}
       {me && !me.email_verified && (
@@ -167,14 +213,14 @@ export function BetSlip({ selection, onClose }: { selection: Selection; onClose:
       <button
         type="button"
         className="btn-block"
-        disabled={!!stakeProblem || isPlacing || !me?.email_verified}
+        disabled={!!stakeProblem || isPlacing || !me?.email_verified || picks.length === 0}
         onClick={submit}
       >
         {isPlacing
           ? "Placing…"
-          : oddsChanged
-            ? `Accept new odds and bet ${stake ? formatMoney(stake) : ""}`
-            : `Place ${stake && !stakeProblem ? formatMoney(stake) : ""} bet`}
+          : `${oddsChanged ? "Accept new odds and place" : "Place"} ${
+              stake && !stakeProblem ? formatMoney(stake) : ""
+            } ${isParlay ? "parlay" : "bet"}`}
       </button>
     </Modal>
   );

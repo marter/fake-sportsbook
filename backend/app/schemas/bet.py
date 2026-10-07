@@ -8,15 +8,22 @@ from app.models.game import Market
 from app.models.ledger import LedgerKind
 
 MIN_STAKE_CENTS = 100  # $1
+MAX_LEGS = 8
 
 
-class BetCreate(BaseModel):
+class BetLegCreate(BaseModel):
     odds_line_id: uuid.UUID
-    stake_cents: int = Field(ge=MIN_STAKE_CENTS)
     # The price/line the user saw. If the line has moved since, the bet is rejected with 409
     # so they can confirm the new one.
     expected_price_american: int
     expected_point: float | None = None
+
+
+class BetCreate(BaseModel):
+    """One leg is a single bet; two or more is a parlay (every leg must win)."""
+
+    legs: list[BetLegCreate] = Field(min_length=1, max_length=MAX_LEGS)
+    stake_cents: int = Field(ge=MIN_STAKE_CENTS)
 
 
 class BetGame(BaseModel):

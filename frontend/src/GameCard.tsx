@@ -1,4 +1,5 @@
 import { MarketHeaders } from "./MarketHelp";
+import { useBetSlip } from "./betslip/BetSlipContext";
 import type { Game, Market, OddsLine } from "./types";
 import { formatAmericanOdds, formatKickoff, formatPoint, splitTeamName } from "./format";
 
@@ -9,17 +10,17 @@ function findLine(game: Game, market: Market, outcome: string): OddsLine | undef
 interface CellProps {
   line: OddsLine | undefined;
   label?: string;
-  selectedLineId: string | null;
+  isPicked: (line: OddsLine) => boolean;
   onSelect: (line: OddsLine) => void;
 }
 
-function OddsCell({ line, label, selectedLineId, onSelect }: CellProps) {
+function OddsCell({ line, label, isPicked, onSelect }: CellProps) {
   if (!line) return <div className="odds-cell odds-cell--empty">–</div>;
   return (
     <button
       type="button"
       className="odds-cell"
-      aria-pressed={line.id === selectedLineId}
+      aria-pressed={isPicked(line)}
       onClick={() => onSelect(line)}
     >
       {label && <span className="odds-point">{label}</span>}
@@ -32,15 +33,15 @@ interface RowProps {
   game: Game;
   team: string;
   totalSide: "Over" | "Under";
-  selectedLineId: string | null;
+  isPicked: (line: OddsLine) => boolean;
   onSelect: (line: OddsLine) => void;
 }
 
-function TeamRow({ game, team, totalSide, selectedLineId, onSelect }: RowProps) {
+function TeamRow({ game, team, totalSide, isPicked, onSelect }: RowProps) {
   const [city, nickname] = splitTeamName(team);
   const spread = findLine(game, "spreads", team);
   const total = findLine(game, "totals", totalSide);
-  const cell = { selectedLineId, onSelect };
+  const cell = { isPicked, onSelect };
 
   return (
     <div className="game-row">
@@ -66,12 +67,12 @@ function TeamRow({ game, team, totalSide, selectedLineId, onSelect }: RowProps) 
 interface GameCardProps {
   game: Game;
   spreadLabel?: string;
-  selectedLineId: string | null;
-  onSelect: (game: Game, line: OddsLine) => void;
 }
 
-export function GameCard({ game, spreadLabel, selectedLineId, onSelect }: GameCardProps) {
-  const select = (line: OddsLine) => onSelect(game, line);
+export function GameCard({ game, spreadLabel }: GameCardProps) {
+  const slip = useBetSlip();
+  const select = (line: OddsLine) => slip.toggle(game, line);
+  const isPicked = (line: OddsLine) => slip.picks.some((p) => p.line.id === line.id);
   return (
     <article className="game-card">
       <div className="game-row game-row--header">
@@ -82,14 +83,14 @@ export function GameCard({ game, spreadLabel, selectedLineId, onSelect }: GameCa
         game={game}
         team={game.away_team}
         totalSide="Over"
-        selectedLineId={selectedLineId}
+        isPicked={isPicked}
         onSelect={select}
       />
       <TeamRow
         game={game}
         team={game.home_team}
         totalSide="Under"
-        selectedLineId={selectedLineId}
+        isPicked={isPicked}
         onSelect={select}
       />
     </article>
