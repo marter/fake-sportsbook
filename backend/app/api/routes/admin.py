@@ -5,12 +5,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import require_admin
+from app.api.routes.bets import BetState, bets_for_user
 from app.core.db import get_db
 from app.models.ledger import LedgerEntry, LedgerKind
 from app.models.user import User
-from app.schemas.admin import AdminUserRead, BalanceAdjustment
-from app.schemas.bet import LedgerEntryRead
-from app.services import wallet
+from app.schemas.admin import AdminUserBets, AdminUserRead, BalanceAdjustment
+from app.schemas.bet import BetRead, LedgerEntryRead
+from app.services import settlement, wallet
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -51,3 +52,20 @@ def adjust_balance(
     )
     db.commit()
     return entry
+
+
+@router.get("/users/{user_id}/bets", response_model=AdminUserBets)
+def user_bets(
+    user_id: uuid.UUID,
+    state: BetState = "open",
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+) -> AdminUserBets:
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    settlement.settle_if_due(db)
+    return AdminUserBets(
+        user=AdminUserRead.model_validate(user),
+        bets=[BetRead.model_validate(b) for b in bets_for_user(db, user_id, state)],
+    )

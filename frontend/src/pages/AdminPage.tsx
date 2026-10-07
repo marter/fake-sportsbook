@@ -108,6 +108,9 @@ function AdjustForm({ user, onDone }: { user: AdminUser; onDone: () => void }) {
         </p>
       )}
       {problem && <p className="form-error">{problem}</p>}
+      <Link to={`/admin/users/${user.id}/bets`} className="btn-link btn-secondary-link">
+        View {user.display_name}’s bets
+      </Link>
       {mutation.error && (
         <p className="form-error">{extractErrorMessage(mutation.error, "Couldn't adjust.")}</p>
       )}

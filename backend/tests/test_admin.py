@@ -79,3 +79,48 @@ def test_admin_adjustment_validation(client: TestClient, db: Session) -> None:
     assert neither.status_code == 422
     same = client.post(url, json={"set_balance_cents": 100_000}, headers=admin)
     assert same.status_code == 400
+
+
+def test_admin_can_view_another_users_bets(client: TestClient, db: Session) -> None:
+    admin = register(client, "boss@example.com")
+    make_admin(db, "boss@example.com")
+    pat = register(client, "pat@example.com")
+    pat_id = user_id(db, "pat@example.com")
+
+    game = client.get("/api/games", headers=pat).json()["games"][0]
+    line = game["odds_lines"][0]
+    client.post(
+        "/api/bets",
+        json={
+            "odds_line_id": line["id"],
+            "stake_cents": 1_500,
+            "expected_price_american": line["price_american"],
+            "expected_point": line["point"],
+        },
+        headers=pat,
+    )
+
+    body = client.get(f"/api/admin/users/{pat_id}/bets?state=open", headers=admin).json()
+    assert body["user"]["email"] == "pat@example.com"
+    assert [b["stake_cents"] for b in body["bets"]] == [1_500]
+    assert body["bets"][0]["legs"][0]["game"]["id"] == game["id"]
+    settled = client.get(f"/api/admin/users/{pat_id}/bets?state=settled", headers=admin).json()
+    assert settled["bets"] == []
+
+
+def test_only_admins_can_view_other_users_bets(client: TestClient, db: Session) -> None:
+    register(client, "boss@example.com")
+    pat = register(client, "pat@example.com")
+    boss_id = user_id(db, "boss@example.com")
+    assert client.get(f"/api/admin/users/{boss_id}/bets", headers=pat).status_code == 403
+
+    # Someone else being an admin doesn't let pat in.
+    make_admin(db, "boss@example.com")
+    assert client.get(f"/api/admin/users/{boss_id}/bets", headers=pat).status_code == 403
+
+
+def test_view_bets_of_unknown_user_is_404(client: TestClient, db: Session) -> None:
+    admin = register(client, "boss@example.com")
+    make_admin(db, "boss@example.com")
+    missing = "00000000-0000-0000-0000-000000000000"
+    assert client.get(f"/api/admin/users/{missing}/bets", headers=admin).status_code == 404

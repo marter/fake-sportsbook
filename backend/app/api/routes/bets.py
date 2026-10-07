@@ -1,3 +1,4 @@
+import uuid
 from datetime import UTC, datetime
 from typing import Literal
 
@@ -82,16 +83,14 @@ def place_bet(
     )
 
 
-@router.get("", response_model=list[BetRead])
-def list_bets(
-    state: Literal["open", "settled"] = "open",
-    db: Session = Depends(get_db),
-    current: User = Depends(get_current_user),
-) -> list[Bet]:
-    settlement.settle_if_due(db)
+BetState = Literal["open", "settled"]
+
+
+def bets_for_user(db: Session, user_id: uuid.UUID, state: BetState) -> list[Bet]:
+    """A user's open bets (oldest first) or settled bets (most recently settled first)."""
     query = (
         select(Bet)
-        .where(Bet.user_id == current.id)
+        .where(Bet.user_id == user_id)
         .options(selectinload(Bet.legs).selectinload(BetLeg.game))
     )
     if state == "open":
@@ -101,3 +100,13 @@ def list_bets(
             Bet.settled_at.desc(), Bet.created_at.desc()
         )
     return list(db.scalars(query).all())
+
+
+@router.get("", response_model=list[BetRead])
+def list_bets(
+    state: BetState = "open",
+    db: Session = Depends(get_db),
+    current: User = Depends(get_current_user),
+) -> list[Bet]:
+    settlement.settle_if_due(db)
+    return bets_for_user(db, current.id, state)

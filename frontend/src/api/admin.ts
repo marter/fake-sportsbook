@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { AdminUser, LedgerEntry } from "../types";
+import type { AdminUser, Bet, LedgerEntry } from "../types";
 
 export async function fetchUsers(): Promise<AdminUser[]> {
   const { data } = await apiClient.get<AdminUser[]>("/api/admin/users");
@@ -14,6 +14,17 @@ export async function adjustBalance(userId: string, adjustment: Adjustment): Pro
   const { data } = await apiClient.post<LedgerEntry>(
     `/api/admin/users/${userId}/adjust`,
     adjustment,
+  );
+  return data;
+}
+
+export async function fetchUserBets(
+  userId: string,
+  state: "open" | "settled",
+): Promise<{ user: AdminUser; bets: Bet[] }> {
+  const { data } = await apiClient.get<{ user: AdminUser; bets: Bet[] }>(
+    `/api/admin/users/${userId}/bets`,
+    { params: { state } },
   );
   return data;
 }
