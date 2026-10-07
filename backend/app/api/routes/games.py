@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/games", tags=["games"])
 def list_games(
     db: Session = Depends(get_db), _current: User = Depends(get_current_user)
 ) -> GamesResponse:
-    """Upcoming games with current lines, refreshing the weekly odds cache first if stale."""
+    """Upcoming games with current lines, refreshing the daily odds cache first if stale."""
     fetch = ensure_fresh_odds(db)
     settlement.settle_if_due(db)
     games = db.scalars(

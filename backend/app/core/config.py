@@ -35,8 +35,9 @@ class Settings(BaseSettings):
     odds_api_base_url: str = "https://api.the-odds-api.com/v4"
     odds_sport_key: str = "americanfootball_nfl"
     odds_bookmaker: str = "draftkings"
-    # Odds are refetched at most this often. Each refetch costs 3 credits (3 markets).
-    odds_cache_hours: int = 24 * 7
+    # Odds are refetched at most this often. Each refetch costs 3 credits (3 markets), so
+    # daily is ~90 of the free plan's 500 monthly credits.
+    odds_cache_hours: int = 24
     # Settlement: start checking for a final score this long after kickoff, and call the
     # scores endpoint (2 credits) at most this often while any bet is waiting on a result.
     game_duration_minutes: int = 180
