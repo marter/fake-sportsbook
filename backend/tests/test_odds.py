@@ -131,3 +131,17 @@ def test_fixture_keeps_real_weekdays(days_later: int) -> None:
         assert (after - before) % timedelta(weeks=1) == timedelta(0)
     assert min(shifted) > now - timedelta(weeks=1)
     assert max(shifted) > now
+
+
+def test_fixture_reload_clears_stale_results(
+    client: TestClient, db: Session, auth_headers: dict[str, str]
+) -> None:
+    client.get("/api/games", headers=auth_headers)
+    game = db.scalars(select(Game)).first()
+    assert game is not None
+    game.completed, game.home_score, game.away_score = True, 3, 0
+    db.commit()
+
+    odds.ensure_fresh_odds(db, NFL, force=True)
+    db.refresh(game)
+    assert (game.completed, game.home_score, game.away_score) == (False, None, None)

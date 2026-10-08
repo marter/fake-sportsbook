@@ -177,3 +177,20 @@ def test_concurrent_bets_cannot_overspend(
 
     assert codes == [201, 400, 400, 400, 400]
     assert balance(client, auth_headers) == 0
+
+
+def test_cannot_bet_on_a_finished_game(
+    client: TestClient, db: Session, auth_headers: dict[str, str]
+) -> None:
+    """Even if a finished game somehow shows a future kickoff, it can't be bet on or listed."""
+    line = first_line(client, auth_headers)
+    game = db.get(Game, line["game_id"])
+    assert game is not None
+    game.completed, game.home_score, game.away_score = True, 21, 14
+    db.commit()
+
+    response = client.post("/api/bets", json=bet_payload(line), headers=auth_headers)
+    assert response.status_code == 400
+    listed = {g["id"] for g in client.get("/api/games", headers=auth_headers).json()["games"]}
+    assert line["game_id"] not in listed
+    assert balance(client, auth_headers) == 100_000

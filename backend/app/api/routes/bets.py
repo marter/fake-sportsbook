@@ -49,7 +49,7 @@ def place_bet(
     if len(set(game_ids)) != len(game_ids):
         # Picks from the same game depend on each other, which parlay odds don't account for.
         raise HTTPException(status_code=400, detail="A parlay can only have one pick per game")
-    started = [g for _, g in lines if g.commence_time <= datetime.now(UTC)]
+    started = [g for _, g in lines if g.completed or g.commence_time <= datetime.now(UTC)]
     if started:
         game = started[0]
         raise HTTPException(

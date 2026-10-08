@@ -50,6 +50,9 @@ export function RegisterPage() {
 
   return (
     <div className="auth-card">
+      <Link to="/" className="auth-back">
+        ‹ What is this?
+      </Link>
       <h1>Create an account</h1>
       <p className="hint">
         You start with $1,000 in play money. We’ll email you a link to confirm your address
