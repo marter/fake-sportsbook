@@ -11,16 +11,17 @@ import { AdminPage } from "./pages/AdminPage";
 import { UserBetsPage } from "./pages/UserBetsPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { RedirectToLastSport } from "./RedirectToLastSport";
+import { LandingPage } from "./pages/LandingPage";
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route path="/" element={<RedirectToLastSport />} />
           <Route path="/games" element={<RedirectToLastSport />} />
           <Route path="/games/:sport" element={<GamesPage />} />
           <Route path="/bets" element={<MyBetsPage />} />

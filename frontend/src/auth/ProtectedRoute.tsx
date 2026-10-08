@@ -5,7 +5,8 @@ export function ProtectedRoute() {
   const { me, isLoading } = useAuth();
 
   if (isLoading) return <p className="page-loading">Loading…</p>;
-  if (!me) return <Navigate to="/login" replace />;
+  // Logged-out visitors go to the landing page (which links to log in), not straight to a form.
+  if (!me) return <Navigate to="/" replace />;
 
   return <Outlet />;
 }

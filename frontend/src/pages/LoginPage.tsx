@@ -30,6 +30,9 @@ export function LoginPage() {
 
   return (
     <div className="auth-card">
+      <Link to="/" className="auth-back">
+        ‹ What is this?
+      </Link>
       <h1>Log in</h1>
       <form onSubmit={handleSubmit}>
         <label>

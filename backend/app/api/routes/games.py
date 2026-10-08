@@ -60,7 +60,11 @@ def list_games(
     settlement.settle_if_due(db)
     games = db.scalars(
         select(Game)
-        .where(Game.sport_key == league.api_key, Game.commence_time > datetime.now(UTC))
+        .where(
+            Game.sport_key == league.api_key,
+            Game.commence_time > datetime.now(UTC),
+            Game.completed.is_(False),
+        )
         .options(selectinload(Game.odds_lines))
         .order_by(Game.commence_time, Game.home_team)
     ).all()

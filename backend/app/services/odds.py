@@ -113,8 +113,16 @@ def load_fixture_events(sport: Sport, now: datetime) -> list[dict[str, Any]]:
     return events
 
 
-def upsert_events(db: Session, events: list[dict[str, Any]], bookmaker: str) -> None:
-    """Inserts or updates games and their lines. Games missing from the feed are left alone."""
+def upsert_events(
+    db: Session, events: list[dict[str, Any]], bookmaker: str, *, reset_results: bool = False
+) -> None:
+    """Inserts or updates games and their lines. Games missing from the feed are left alone.
+
+    `reset_results` clears any final score on the updated games. Only fixture mode needs it: it
+    moves sample games back into the future, and a game finished in an earlier dev session
+    would otherwise reappear as upcoming but already final.
+    """
+    reset = {"completed": False, "home_score": None, "away_score": None} if reset_results else {}
     for event in events:
         game_id = db.execute(
             insert(Game)
@@ -132,6 +140,7 @@ def upsert_events(db: Session, events: list[dict[str, Any]], bookmaker: str) -> 
                     "away_team": event["away_team"],
                     "commence_time": _parse_time(event["commence_time"]),
                     "updated_at": func.now(),
+                    **reset,
                 },
             )
             .returning(Game.id)
@@ -213,7 +222,7 @@ def ensure_fresh_odds(db: Session, sport: Sport, *, force: bool = False) -> Odds
         events, remaining = load_fixture_events(sport, now), None
         source = "fixture"
 
-    upsert_events(db, events, settings.odds_bookmaker)
+    upsert_events(db, events, settings.odds_bookmaker, reset_results=source == "fixture")
     fetch = OddsFetch(
         sport_key=sport.api_key,
         fetched_at=now,

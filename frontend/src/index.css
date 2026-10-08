@@ -1341,3 +1341,142 @@ button.slip-remove:hover:not(:disabled) {
   font-weight: 600;
   color: var(--text-h);
 }
+
+/* ---- Landing page ---- */
+
+.landing {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: calc(var(--space-6) + var(--safe-top)) var(--space-4) calc(var(--space-6) + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.landing-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+}
+
+.landing-hero img {
+  border-radius: 14px;
+}
+
+.landing-hero h1 {
+  font-size: 34px;
+  letter-spacing: -0.02em;
+}
+
+.landing-tagline {
+  font-size: 18px;
+  color: var(--text-h);
+  max-width: 30em;
+}
+
+.landing-disclaimer {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.landing-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 150px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.landing-button:hover {
+  text-decoration: none;
+  border-color: var(--accent);
+}
+
+.landing-button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.landing-button--primary:hover {
+  opacity: 0.9;
+}
+
+.landing-features {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+.landing-feature {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.landing-feature:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+.landing-feature img {
+  flex: 0 0 auto;
+  width: 220px;
+  height: auto;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.landing-feature h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 22px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  color: var(--text-h);
+}
+
+.landing-feature p {
+  color: var(--text);
+}
+
+.landing-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.auth-back {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  font-size: 14px;
+}
+
+@media (max-width: 560px) {
+  .landing-feature,
+  .landing-feature:nth-child(even) {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-4);
+  }
+
+  .landing-feature img {
+    width: min(260px, 72vw);
+  }
+}
