@@ -26,7 +26,7 @@ sudo dpkg-reconfigure -f noninteractive unattended-upgrades
 # Shared network that Caddy and every app join
 sudo docker network inspect web >/dev/null 2>&1 || sudo docker network create web
 
-sudo mkdir -p /srv/caddy /srv/fake-sportsbook
-sudo chown "$USER:$USER" /srv/caddy /srv/fake-sportsbook
+sudo mkdir -p /srv/caddy /srv/fake-sportsbook /srv/site
+sudo chown "$USER:$USER" /srv/caddy /srv/fake-sportsbook /srv/site
 
 echo "Done. Log out and back in so the docker group applies."

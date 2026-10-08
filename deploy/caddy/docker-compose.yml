@@ -13,6 +13,7 @@ services:
       - "443:443/udp"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - /srv/site:/srv/site:ro  # martinteran.me (see the martinteran.me repo)
       - caddy_data:/data
       - caddy_config:/config
     networks:
