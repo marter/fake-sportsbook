@@ -144,7 +144,5 @@ def test_admin_can_verify_or_delete_unverified(client: TestClient, db: Session) 
 
     typo_delete = client.delete(f"/api/admin/users/{ids['typo@exmaple.com']}", headers=admin)
     assert typo_delete.status_code == 204
-    verified_delete = client.delete(f"/api/admin/users/{ids['stuck@example.com']}", headers=admin)
-    assert verified_delete.status_code == 400
     remaining = {u["email"] for u in client.get("/api/admin/users", headers=admin).json()}
     assert remaining == {"boss@example.com", "stuck@example.com"}

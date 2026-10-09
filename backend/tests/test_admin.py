@@ -188,3 +188,62 @@ def test_void_unknown_bet_is_404(client: TestClient, db: Session) -> None:
     make_admin(db, "boss@example.com")
     missing = "00000000-0000-0000-0000-000000000000"
     assert client.post(f"/api/admin/bets/{missing}/void", json={}, headers=admin).status_code == 404
+
+
+def test_admin_deletes_user_with_bets_and_history(client: TestClient, db: Session) -> None:
+    admin = register(client, "boss@example.com")
+    make_admin(db, "boss@example.com")
+    pat = register(client, "pat@example.com")
+    sam = register(client, "sam@example.com")
+    pat_id, sam_id = user_id(db, "pat@example.com"), user_id(db, "sam@example.com")
+    place_bet(client, pat, 2_000)
+    place_bet(client, sam, 1_000)
+    client.post(f"/api/admin/users/{pat_id}/adjust", json={"amount_cents": 500}, headers=admin)
+
+    assert client.delete(f"/api/admin/users/{pat_id}", headers=admin).status_code == 204
+
+    emails = {u["email"] for u in client.get("/api/admin/users", headers=admin).json()}
+    assert emails == {"boss@example.com", "sam@example.com"}
+    assert client.get("/api/auth/me", headers=pat).status_code == 401  # old token is dead
+    names = [r["display_name"] for r in client.get("/api/leaderboard", headers=admin).json()]
+    assert "pat" not in names
+    # Sam is untouched, and the email can sign up again.
+    assert len(client.get("/api/bets", headers=sam).json()) == 1
+    assert register(client, "pat@example.com")
+    assert client.get(f"/api/admin/users/{sam_id}/bets", headers=admin).status_code == 200
+
+
+def test_deleting_an_admin_keeps_their_adjustments_on_others(
+    client: TestClient, db: Session
+) -> None:
+    boss = register(client, "boss@example.com")
+    make_admin(db, "boss@example.com")
+    other_admin = register(client, "deputy@example.com")
+    make_admin(db, "deputy@example.com")
+    pat = register(client, "pat@example.com")
+    pat_id = user_id(db, "pat@example.com")
+    client.post(
+        f"/api/admin/users/{pat_id}/adjust",
+        json={"amount_cents": 700, "note": "bonus"},
+        headers=other_admin,
+    )
+
+    deputy_id = user_id(db, "deputy@example.com")
+    assert client.delete(f"/api/admin/users/{deputy_id}", headers=boss).status_code == 204
+    ledger = client.get("/api/wallet/ledger", headers=pat).json()
+    assert [(e["kind"], e["note"]) for e in ledger][0] == ("admin_adjustment", "bonus")
+    assert client.get("/api/auth/me", headers=pat).json()["balance_cents"] == 100_700
+
+
+def test_delete_user_guards(client: TestClient, db: Session) -> None:
+    boss = register(client, "boss@example.com")
+    make_admin(db, "boss@example.com")
+    pat = register(client, "pat@example.com")
+    boss_id, pat_id = user_id(db, "boss@example.com"), user_id(db, "pat@example.com")
+
+    assert client.delete(f"/api/admin/users/{boss_id}", headers=boss).status_code == 400
+    assert client.delete(f"/api/admin/users/{boss_id}", headers=pat).status_code == 403
+    missing = "00000000-0000-0000-0000-000000000000"
+    assert client.delete(f"/api/admin/users/{missing}", headers=boss).status_code == 404
+    assert client.get("/api/auth/me", headers=pat).status_code == 200
+    assert pat_id

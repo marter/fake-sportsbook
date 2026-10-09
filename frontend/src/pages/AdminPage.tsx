@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   adjustBalance,
-  deleteUnverifiedUser,
+  deleteUser,
   fetchStuckGames,
   fetchUsers,
   markVerified,
@@ -20,14 +20,13 @@ type Mode = "add" | "remove" | "set";
 
 function VerificationActions({ user, onDone }: { user: AdminUser; onDone: () => void }) {
   const queryClient = useQueryClient();
-  const done = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-    queryClient.invalidateQueries({ queryKey: ["registration-open"] });
-    onDone();
-  };
-  const verify = useMutation({ mutationFn: () => markVerified(user.id), onSuccess: done });
-  const remove = useMutation({ mutationFn: () => deleteUnverifiedUser(user.id), onSuccess: done });
-  const error = verify.error ?? remove.error;
+  const verify = useMutation({
+    mutationFn: () => markVerified(user.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      onDone();
+    },
+  });
 
   return (
     <div className="admin-verify">
@@ -35,24 +34,76 @@ function VerificationActions({ user, onDone }: { user: AdminUser; onDone: () => 
         {user.display_name} hasn’t confirmed their email, so they can’t bet. Unconfirmed accounts
         are deleted automatically after 48 hours.
       </p>
-      <div className="slip-actions">
+      <button type="button" disabled={verify.isPending} onClick={() => verify.mutate()}>
+        Mark verified
+      </button>
+      {verify.error && (
+        <p className="form-error">{extractErrorMessage(verify.error, "That didn't work.")}</p>
+      )}
+    </div>
+  );
+}
+
+/** Deleting can't be undone, so it takes a second step: typing the user's name. */
+function DeleteUserSection({ user, onDone }: { user: AdminUser; onDone: () => void }) {
+  const queryClient = useQueryClient();
+  const [confirming, setConfirming] = useState(false);
+  const [typed, setTyped] = useState("");
+  const remove = useMutation({
+    mutationFn: () => deleteUser(user.id),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin-users"] }),
+        queryClient.invalidateQueries({ queryKey: ["leaderboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-stuck-games"] }),
+        queryClient.invalidateQueries({ queryKey: ["registration-open"] }),
+      ]);
+      onDone();
+    },
+  });
+
+  if (!confirming) {
+    return (
+      <div className="admin-delete">
         <button
           type="button"
-          className="btn-secondary btn-danger-text"
-          disabled={remove.isPending}
-          onClick={() => {
-            if (window.confirm(`Delete ${user.email}? This frees their sign-up spot.`)) {
-              remove.mutate();
-            }
-          }}
+          className="btn-secondary btn-danger-text btn-block"
+          onClick={() => setConfirming(true)}
         >
-          Delete account
-        </button>
-        <button type="button" disabled={verify.isPending} onClick={() => verify.mutate()}>
-          Mark verified
+          Delete account…
         </button>
       </div>
-      {error && <p className="form-error">{extractErrorMessage(error, "That didn't work.")}</p>}
+    );
+  }
+
+  const matches = typed.trim() === user.display_name.trim();
+  return (
+    <div className="admin-delete admin-delete--confirm">
+      <p>
+        <strong>Permanently delete {user.display_name}?</strong> This removes their account, all
+        their bets (open bets aren’t refunded) and their balance history. It can’t be undone. Their
+        sign-up spot frees up and {user.email} can register again.
+      </p>
+      <label className="slip-stake">
+        Type “{user.display_name}” to confirm
+        <input value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" />
+      </label>
+      {remove.error && (
+        <p className="form-error">{extractErrorMessage(remove.error, "Couldn't delete.")}</p>
+      )}
+      <div className="slip-actions">
+        <button type="button" className="btn-secondary" onClick={() => setConfirming(false)}>
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="btn-danger"
+          disabled={!matches || remove.isPending}
+          onClick={() => remove.mutate()}
+        >
+          {remove.isPending ? "Deleting…" : "Delete forever"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -246,11 +297,14 @@ export function AdminPage() {
         ))}
       </ul>
       {editing && (
-        <Modal title={`Adjust ${editing.display_name}`} onClose={() => setEditing(null)}>
+        <Modal title={editing.display_name} onClose={() => setEditing(null)}>
           {!editing.email_verified && (
             <VerificationActions user={editing} onDone={() => setEditing(null)} />
           )}
           <AdjustForm user={editing} onDone={() => setEditing(null)} />
+          {editing.id !== me.id && (
+            <DeleteUserSection user={editing} onDone={() => setEditing(null)} />
+          )}
         </Modal>
       )}
     </>
