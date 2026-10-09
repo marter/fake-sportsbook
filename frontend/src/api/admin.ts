@@ -39,7 +39,8 @@ export async function markVerified(userId: string): Promise<AdminUser> {
   return data;
 }
 
-export async function deleteUnverifiedUser(userId: string): Promise<void> {
+/** Permanently deletes the account with all its bets and history. */
+export async function deleteUser(userId: string): Promise<void> {
   await apiClient.delete(`/api/admin/users/${userId}`);
 }
 

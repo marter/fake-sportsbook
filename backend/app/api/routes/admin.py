@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import delete, select, text
+from sqlalchemy import delete, select, text, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import require_admin
@@ -134,18 +134,28 @@ def mark_verified(
 
 
 @router.delete("/users/{user_id}", status_code=204)
-def delete_unverified_user(
+def delete_user(
     user_id: uuid.UUID, db: Session = Depends(get_db), admin: User = Depends(require_admin)
 ) -> None:
-    """Deletes an account that never verified (e.g. a typo'd email holding a sign-up slot).
-    Verified accounts can't be deleted here, since they may have bets and history."""
-    user = db.get(User, user_id)
-    if user is None:
+    """Permanently deletes an account with all its bets and balance history, freeing its
+    sign-up slot (the email can register again). Open bets go too, without refunds."""
+    if user_id == admin.id:
+        raise HTTPException(status_code=400, detail="You can't delete your own account")
+    # Same lock as settlement, so a bet can't be paid out while its owner is being deleted.
+    db.execute(text("SELECT pg_advisory_xact_lock(hashtext('settlement'))"))
+    if db.get(User, user_id) is None:
         raise HTTPException(status_code=404, detail="User not found")
-    if user.email_verified:
-        raise HTTPException(status_code=400, detail="Only unverified accounts can be deleted")
+    wallet.lock_user(db, user_id)
+
+    # Adjustments this user made to other people's balances stay on those people's history.
+    db.execute(
+        update(LedgerEntry)
+        .where(LedgerEntry.created_by_id == user_id)
+        .values(created_by_id=None)
+    )
     db.execute(delete(LedgerEntry).where(LedgerEntry.user_id == user_id))
-    db.delete(user)
+    db.execute(delete(Bet).where(Bet.user_id == user_id))  # legs cascade
+    db.execute(delete(User).where(User.id == user_id))  # verification tokens cascade
     db.commit()
 
 

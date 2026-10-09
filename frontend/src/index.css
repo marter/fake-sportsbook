@@ -1480,3 +1480,19 @@ button.slip-remove:hover:not(:disabled) {
     width: min(260px, 72vw);
   }
 }
+
+.admin-delete {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.admin-delete--confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-md);
+  background: var(--danger-bg);
+  font-size: 14px;
+}
