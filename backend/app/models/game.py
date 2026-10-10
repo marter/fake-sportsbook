@@ -33,6 +33,10 @@ class Game(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         DateTime(timezone=True), nullable=False, index=True
     )
     completed: Mapped[bool] = mapped_column(default=False)
+    # When this game's player props were fetched (once per game; they cost credits per game).
+    props_fetched_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     home_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     away_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
 

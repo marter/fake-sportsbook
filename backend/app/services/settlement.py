@@ -119,21 +119,6 @@ def stuck_games(db: Session) -> list[Game]:
     )
 
 
-def _low_on_credits(db: Session) -> bool:
-    """True if the most recent API call reported fewer credits left than the floor."""
-    last_api_call = db.scalars(
-        select(OddsFetch)
-        .where(OddsFetch.source == "api", OddsFetch.requests_remaining.is_not(None))
-        .order_by(OddsFetch.fetched_at.desc())
-        .limit(1)
-    ).first()
-    return (
-        last_api_call is not None
-        and last_api_call.requests_remaining is not None
-        and last_api_call.requests_remaining < get_settings().scores_min_credits
-    )
-
-
 def _has_settleable_bets(db: Session) -> bool:
     """Ungraded legs of open bets on games that already have a final score (normally graded in
     the same run that records the score, but this catches anything left behind)."""
@@ -217,6 +202,8 @@ def settle_completed(db: Session, now: datetime) -> int:
             game = leg.game
             if leg.result != LegResult.PENDING or not game.completed:
                 continue
+            if leg.participant:
+                continue  # player props are graded from box scores (not built yet)
             assert game.home_score is not None and game.away_score is not None
             leg.result = grade_leg(
                 leg.market,
@@ -256,7 +243,7 @@ def settle_if_due(db: Session, *, force_fetch: bool = False) -> int:
     db.execute(text("SELECT pg_advisory_xact_lock(hashtext('settlement'))"))
     awaiting = _games_awaiting_result(db, now)  # another request may have just settled them
 
-    low_credits = settings.odds_api_key and _low_on_credits(db)
+    low_credits = settings.odds_api_key and odds.low_on_credits(db)
     if awaiting and low_credits:
         logger.warning(
             "Skipping score check: under %d API credits left", settings.scores_min_credits

@@ -23,6 +23,10 @@ it can change without notice) has full box scores:
 
 ## Markets (start small: NFL only)
 
+**Decision (Oct 10): two markets on the free plan, Anytime TD and Passing yards** (2 credits
+per game, ~130/month). Adding more later is a one-line change to `NFL_PROPS` in
+`backend/app/sports.py`, e.g. after moving to the ~$30/month API tier.
+
 | Key | Shown as | Kind | Graded from (ESPN box score) |
 |---|---|---|---|
 | `player_pass_yds` | Passing yards | Over/Under | passing YDS |
@@ -63,9 +67,11 @@ are fine for play money; an admin can force a refresh).
 
 1. **Data model** (branch): markets become plain strings instead of a fixed enum, and lines
    and legs get a `participant` (player name). Migration converts existing data; no visible
-   change. *(started)*
+   change. *(done)*
 2. **Fetch props**: per-game, lazy, cached; `GET /api/games/{id}/props`; credits logged like
-   other fetches; fixture data for dev.
+   other fetches; fixture data for dev. *(done: once per game within 48h of kickoff, skipped
+   when credits are low, retried if the API call fails; settlement leaves prop legs open
+   until step 4)*
 3. **UI**: "Props" link on each game card opens a game page with props grouped by market,
    player rows with Over/Under (or Yes) buttons that add to the existing bet slip. Bet slip
    and bet cards label them, e.g. "Hurts Over 186.5 pass yds".
