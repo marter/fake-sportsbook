@@ -157,7 +157,8 @@ def upsert_events(
                     insert(OddsLine)
                     .values(
                         game_id=game_id,
-                        market=Market(market["key"]),
+                        market=market["key"],
+                        participant=outcome.get("description", ""),
                         outcome=outcome["name"],
                         price_american=outcome["price"],
                         point=outcome.get("point"),

@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 def grade_leg(
-    market: Market,
+    market: str,
     outcome: str,
     point: float | None,
     home_team: str,

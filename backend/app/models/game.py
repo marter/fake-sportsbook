@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,6 +12,9 @@ from app.sports import BY_API_KEY
 
 
 class Market(enum.StrEnum):
+    """The game-level markets. Stored as plain strings, so player-prop markets (e.g.
+    "player_pass_yds") can live in the same columns without a schema change per market."""
+
     H2H = "h2h"  # moneyline
     SPREADS = "spreads"
     TOTALS = "totals"
@@ -49,15 +52,23 @@ class OddsLine(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     __tablename__ = "odds_lines"
     __table_args__ = (
-        UniqueConstraint("game_id", "market", "outcome", name="uq_odds_line_game_market_outcome"),
+        UniqueConstraint(
+            "game_id", "market", "outcome", "participant", name="uq_odds_line_game_market_outcome"
+        ),
     )
 
     game_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("games.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    market: Mapped[Market] = mapped_column(Enum(Market, name="market"), nullable=False)
-    # A team name for h2h/spreads, "Over" or "Under" for totals.
+    # A Market value, or a player-prop market key like "player_pass_yds".
+    market: Mapped[str] = mapped_column(String(40), nullable=False)
+    # A team name for h2h/spreads; "Over"/"Under" for totals and over/under props; "Yes" for
+    # yes-only props like anytime TD.
     outcome: Mapped[str] = mapped_column(String(100), nullable=False)
+    # The player for a prop; empty for game-level markets.
+    participant: Mapped[str] = mapped_column(
+        String(100), nullable=False, default="", server_default=""
+    )
     price_american: Mapped[int] = mapped_column(Integer, nullable=False)
     # Spread or total line; null for h2h.
     point: Mapped[float | None] = mapped_column(Numeric(5, 1, asdecimal=False), nullable=True)

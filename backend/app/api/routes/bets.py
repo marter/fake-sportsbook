@@ -83,6 +83,7 @@ def place_bet(
                 game_id=game.id,
                 market=line.market,
                 outcome=line.outcome,
+                participant=line.participant,
                 price_american=line.price_american,
                 point=line.point,
             )

@@ -145,3 +145,50 @@ def test_fixture_reload_clears_stale_results(
     odds.ensure_fresh_odds(db, NFL, force=True)
     db.refresh(game)
     assert (game.completed, game.home_score, game.away_score) == (False, None, None)
+
+
+def prop(name: str, player: str, point: float) -> dict:
+    return {"name": name, "description": player, "price": -112, "point": point}
+
+
+def test_player_lines_are_stored_per_player(db: Session) -> None:
+    """Two players' "Over" lines in the same market and game are separate lines."""
+    event = {
+        "id": "props-game",
+        "sport_key": "americanfootball_nfl",
+        "home_team": "Jacksonville Jaguars",
+        "away_team": "Philadelphia Eagles",
+        "commence_time": (datetime.now(UTC) + timedelta(days=1)).isoformat(),
+        "bookmakers": [
+            {
+                "key": "draftkings",
+                "markets": [
+                    {
+                        "key": "player_pass_yds",
+                        "outcomes": [
+                            prop("Over", "Trevor Lawrence", 228.5),
+                            prop("Under", "Trevor Lawrence", 228.5),
+                            prop("Over", "Jalen Hurts", 186.5),
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    odds.MARKETS.append("player_pass_yds")
+    try:
+        odds.upsert_events(db, [event], "draftkings")
+        db.commit()
+        # Same feed again updates in place rather than duplicating.
+        event["bookmakers"][0]["markets"][0]["outcomes"][2]["point"] = 190.5
+        odds.upsert_events(db, [event], "draftkings")
+        db.commit()
+    finally:
+        odds.MARKETS.remove("player_pass_yds")
+
+    lines = db.scalars(select(OddsLine).where(OddsLine.market == "player_pass_yds")).all()
+    assert sorted((line.participant, line.outcome, line.point) for line in lines) == [
+        ("Jalen Hurts", "Over", 190.5),
+        ("Trevor Lawrence", "Over", 228.5),
+        ("Trevor Lawrence", "Under", 228.5),
+    ]

@@ -3,14 +3,13 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.game import Market
-
 
 class OddsLineRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
-    market: Market
+    market: str
+    participant: str
     outcome: str
     price_american: int
     point: float | None

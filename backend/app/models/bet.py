@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
 from app.models.base import TimestampMixin, UUIDPrimaryKeyMixin
-from app.models.game import Game, Market
+from app.models.game import Game
 
 
 class BetStatus(enum.StrEnum):
@@ -60,8 +60,11 @@ class BetLeg(UUIDPrimaryKeyMixin, Base):
     game_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("games.id"), nullable=False, index=True
     )
-    market: Mapped[Market] = mapped_column(Enum(Market, name="market"), nullable=False)
+    market: Mapped[str] = mapped_column(String(40), nullable=False)
     outcome: Mapped[str] = mapped_column(String(100), nullable=False)
+    participant: Mapped[str] = mapped_column(
+        String(100), nullable=False, default="", server_default=""
+    )
     price_american: Mapped[int] = mapped_column(Integer, nullable=False)
     point: Mapped[float | None] = mapped_column(Numeric(5, 1, asdecimal=False), nullable=True)
     result: Mapped[LegResult] = mapped_column(

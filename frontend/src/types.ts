@@ -15,6 +15,8 @@ export interface OddsLine {
   id: string;
   market: Market;
   outcome: string;
+  /** The player for a prop; empty for game-level markets. */
+  participant: string;
   price_american: number;
   point: number | null;
 }
@@ -49,6 +51,7 @@ export interface BetGame {
 export interface BetLeg {
   market: Market;
   outcome: string;
+  participant: string;
   price_american: number;
   point: number | null;
   result: LegResult;
