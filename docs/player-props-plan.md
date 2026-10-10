@@ -74,7 +74,8 @@ are fine for play money; an admin can force a refresh).
    until step 4)*
 3. **UI**: "Props" link on each game card opens a game page with props grouped by market,
    player rows with Over/Under (or Yes) buttons that add to the existing bet slip. Bet slip
-   and bet cards label them, e.g. "Hurts Over 186.5 pass yds".
+   and bet cards label them, e.g. "Hurts Over 186.5 pass yds". *(done: /props/{gameId}; Anytime
+   TD sorted favorites first; picking a second line from the same game swaps it in)*
 4. **Grading**: after a game is final, match it to ESPN by date and teams, pull the box score,
    match players by normalized name (case, punctuation, Jr./III), grade or void legs. Admin
    "needs grading" list for anything unmatched.

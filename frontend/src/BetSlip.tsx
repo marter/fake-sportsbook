@@ -85,7 +85,7 @@ export function BetSlip() {
   const summaryLabel = isParlay
     ? `${picks.length}-pick parlay`
     : picks[0]
-      ? selectionLabel(picks[0].line.market, picks[0].line.outcome, picks[0].line.point)
+      ? selectionLabel(picks[0].line)
       : "";
 
   async function submit() {
@@ -124,7 +124,7 @@ export function BetSlip() {
         {picks.map(({ game, line }) => (
           <li key={line.id}>
             <div className="slip-pick-text">
-              <p className="slip-label">{selectionLabel(line.market, line.outcome, line.point)}</p>
+              <p className="slip-label">{selectionLabel(line)}</p>
               <p className="hint">
                 {game.away_team} @ {game.home_team} · {formatDateTime(game.commence_time)}
               </p>
@@ -133,7 +133,7 @@ export function BetSlip() {
             <button
               type="button"
               className="slip-remove"
-              aria-label={`Remove ${selectionLabel(line.market, line.outcome, line.point)}`}
+              aria-label={`Remove ${selectionLabel(line)}`}
               onClick={() => slip.remove(line.id)}
             >
               ×

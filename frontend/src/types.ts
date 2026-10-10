@@ -27,6 +27,8 @@ export interface Game {
   away_team: string;
   commence_time: string;
   odds_lines: OddsLine[];
+  /** This league offers player props (they open about two days before kickoff). */
+  has_props: boolean;
 }
 
 export interface GamesResponse {
@@ -129,4 +131,18 @@ export interface Sport {
   upcoming_games: number;
   spread_label: string;
   season_note: string;
+}
+
+export interface PropMarket {
+  key: string;
+  label: string;
+  short: string;
+  kind: "over_under" | "yes";
+}
+
+export interface GameProps {
+  game: Game;
+  unavailable_reason: string | null;
+  markets: PropMarket[];
+  lines: OddsLine[];
 }

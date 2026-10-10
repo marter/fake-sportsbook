@@ -12,6 +12,7 @@ import { UserBetsPage } from "./pages/UserBetsPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { RedirectToLastSport } from "./RedirectToLastSport";
 import { LandingPage } from "./pages/LandingPage";
+import { GamePropsPage } from "./pages/GamePropsPage";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/games" element={<RedirectToLastSport />} />
           <Route path="/games/:sport" element={<GamesPage />} />
+          <Route path="/props/:gameId" element={<GamePropsPage />} />
           <Route path="/bets" element={<MyBetsPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/account" element={<AccountPage />} />

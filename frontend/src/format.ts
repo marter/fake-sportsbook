@@ -83,7 +83,30 @@ export function parseDollars(value: string): number | null {
 }
 
 /** "Bills -4.5", "Over 47.5", "Bills moneyline" */
-export function selectionLabel(market: string, outcome: string, point: number | null): string {
+/** Short names for player-prop markets, used in labels like "Jalen Hurts Over 186.5 pass yds". */
+export const PROP_SHORT_LABELS: Record<string, string> = {
+  player_anytime_td: "anytime TD",
+  player_pass_yds: "pass yds",
+  player_rush_yds: "rush yds",
+  player_reception_yds: "rec yds",
+};
+
+export interface PickLike {
+  market: string;
+  outcome: string;
+  point: number | null;
+  participant?: string;
+}
+
+/** "Bills -4.5", "Over 47.5", "Bills moneyline", "Jalen Hurts Over 186.5 pass yds",
+ * "Saquon Barkley anytime TD" */
+export function selectionLabel({ market, outcome, point, participant }: PickLike): string {
+  if (participant) {
+    const what = PROP_SHORT_LABELS[market] ?? market.replace(/^(player|batter|pitcher)_/, "").replace(/_/g, " ");
+    return outcome === "Yes"
+      ? `${participant} ${what}`
+      : `${participant} ${outcome} ${point ?? ""} ${what}`.replace(/\s+/g, " ");
+  }
   if (market === "totals") return `${outcome} ${point}`;
   const nickname = splitTeamName(outcome)[1];
   if (market === "spreads" && point != null) return `${nickname} ${formatPoint(point)}`;

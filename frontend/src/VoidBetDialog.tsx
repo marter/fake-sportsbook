@@ -23,7 +23,7 @@ export function VoidBetDialog({
   const label =
     bet.legs.length > 1
       ? `${bet.legs.length}-pick parlay`
-      : selectionLabel(leg.market, leg.outcome, leg.point);
+      : selectionLabel(leg);
 
   const mutation = useMutation({
     mutationFn: () => voidBet(bet.id, note.trim() || undefined),

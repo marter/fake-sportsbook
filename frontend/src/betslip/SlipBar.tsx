@@ -13,7 +13,7 @@ export function SlipBar() {
   const first = picks[0].line;
   const summary =
     picks.length === 1
-      ? `${selectionLabel(first.market, first.outcome, first.point)} · ${formatAmericanOdds(first.price_american)}`
+      ? `${selectionLabel(first)} · ${formatAmericanOdds(first.price_american)}`
       : `${picks.length}-pick parlay · ${formatAmericanOdds(combinedAmericanOdds(prices))}`;
 
   return (

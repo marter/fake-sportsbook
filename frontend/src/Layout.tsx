@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import { formatMoney } from "./format";
 import { VerifyBanner } from "./VerifyBanner";
@@ -22,6 +22,7 @@ export function Layout() {
 
 function Shell() {
   const { me } = useAuth();
+  const { pathname } = useLocation();
   const { picks } = useBetSlip();
 
   return (
@@ -41,7 +42,15 @@ function Shell() {
       <SlipBar />
       <nav className="tabbar">
         {TABS.map((tab) => (
-          <NavLink key={tab.to} to={tab.to} end={false} className="tabbar-item">
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            end={false}
+            className={({ isActive }) =>
+              // A game's props page belongs to the Games tab too.
+              `tabbar-item${isActive || (tab.to === "/games" && pathname.startsWith("/props/")) ? " active" : ""}`
+            }
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d={tab.icon} />
             </svg>
