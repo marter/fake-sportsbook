@@ -14,7 +14,12 @@ def lock_user(db: Session, user_id: uuid.UUID) -> User:
 
     Anything that reads and then changes balance_cents must hold this lock, or two
     concurrent requests could both spend the same money.
+
+    Flushes first: `populate_existing` overwrites the in-memory user with the row, which
+    would silently discard an earlier unflushed balance change in this same transaction
+    (e.g. a second payout in one settlement run) since sessions don't autoflush.
     """
+    db.flush()
     return db.scalars(
         select(User).where(User.id == user_id).with_for_update().execution_options(
             populate_existing=True
