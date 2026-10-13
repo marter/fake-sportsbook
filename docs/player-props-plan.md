@@ -1,6 +1,6 @@
 # Player props: plan
 
-Status: in progress on the `feat/player-props` branch, not merged to main.
+Status: feature-complete on the `feat/player-props` branch, not merged to main yet.
 
 Player props are bets on one player's stats rather than the game result, e.g.
 "Jalen Hurts over 186.5 passing yards" or "Travis Kelce scores a touchdown (anytime)".
@@ -78,6 +78,9 @@ are fine for play money; an admin can force a refresh).
    TD sorted favorites first; picking a second line from the same game swaps it in)*
 4. **Grading**: after a game is final, match it to ESPN by date and teams, pull the box score,
    match players by normalized name (case, punctuation, Jr./III), grade or void legs. Admin
-   "needs grading" list for anything unmatched.
+   "needs grading" list for anything unmatched. *(done: `services/props_grading.py`,
+   run by the worker and `app.cli settle`, never on page loads; anytime TD counts rushing,
+   receiving and return TDs; not in the box score = void; admin "Props to grade" list after a
+   12h grace period; tested against a saved real ESPN box score)*
 5. **Tests** throughout; rehearse on dev with fixture props and a saved ESPN box score.
 6. **Decide credits, then merge.**

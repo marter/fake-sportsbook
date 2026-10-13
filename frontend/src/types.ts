@@ -37,7 +37,7 @@ export interface GamesResponse {
 }
 
 export type BetStatus = "pending" | "won" | "lost" | "push" | "void";
-export type LegResult = "pending" | "won" | "lost" | "push";
+export type LegResult = "pending" | "won" | "lost" | "push" | "void";
 
 export interface BetGame {
   id: string;
@@ -145,4 +145,21 @@ export interface GameProps {
   unavailable_reason: string | null;
   markets: PropMarket[];
   lines: OddsLine[];
+}
+
+export interface PropToGrade {
+  leg_id: string;
+  bet_id: string;
+  user_id: string;
+  display_name: string;
+  market: string;
+  outcome: string;
+  participant: string;
+  point: number | null;
+  price_american: number;
+  home_team: string;
+  away_team: string;
+  commence_time: string;
+  home_score: number | null;
+  away_score: number | null;
 }

@@ -13,6 +13,7 @@ import type { Adjustment } from "../api/admin";
 import { extractErrorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import { Modal } from "../Modal";
+import { PropsToGrade } from "../PropsToGrade";
 import { formatDateTime, formatMoney, formatSignedMoney, parseDollars } from "../format";
 import type { AdminUser } from "../types";
 
@@ -248,6 +249,7 @@ export function AdminPage() {
 
   return (
     <>
+      <PropsToGrade />
       {stuck && stuck.length > 0 && (
         <section className="attention">
           <h2>Needs attention</h2>

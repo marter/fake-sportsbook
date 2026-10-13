@@ -17,7 +17,13 @@ const STATUS_LABEL: Record<Bet["status"], string> = {
   void: "Void",
 };
 
-const LEG_MARK: Record<BetLeg["result"], string> = { pending: "•", won: "✓", lost: "✗", push: "–" };
+const LEG_MARK: Record<BetLeg["result"], string> = {
+  pending: "•",
+  won: "✓",
+  lost: "✗",
+  push: "–",
+  void: "–",
+};
 
 function legScore(leg: BetLeg): string {
   const { game } = leg;
