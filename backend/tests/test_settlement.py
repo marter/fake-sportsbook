@@ -304,3 +304,34 @@ def test_concurrent_settlement_pays_once(
         )
         assert payouts == 1
         assert fresh.get(Bet, bet["id"]).status == BetStatus.WON
+
+
+def test_several_payouts_to_one_user_in_one_run_all_count(
+    client: TestClient, db: Session, auth_headers: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Regression: re-reading the user under a row lock used to discard an earlier, unflushed
+    balance change in the same transaction, so only the last payout reached the balance."""
+    games = client.get("/api/games", headers=auth_headers).json()["games"][:3]
+    bets = []
+    for game in games:
+        line = next(line for line in game["odds_lines"] if line["market"] == "h2h")
+        bets.append(
+            client.post(
+                "/api/bets",
+                json=bet_payload({**line, "game_id": game["id"]}, 1_000),
+                headers=auth_headers,
+            ).json()["bet"]
+        )
+        start_game(db, game["id"])
+        db_game = db.get(Game, game["id"])
+        assert db_game is not None
+        home_won = line["outcome"] == game["home_team"]
+        db_game.completed = True
+        db_game.home_score, db_game.away_score = (30, 10) if home_won else (10, 30)
+    db.commit()
+
+    client.get("/api/bets", headers=auth_headers)  # settles all three in one run
+    payouts = sum(b["potential_payout_cents"] for b in bets)
+    assert balance(client, auth_headers) == 100_000 - 3_000 + payouts
+    ledger = client.get("/api/wallet/ledger", headers=auth_headers).json()
+    assert sum(e["amount_cents"] for e in ledger) == balance(client, auth_headers)
