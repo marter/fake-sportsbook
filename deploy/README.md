@@ -92,10 +92,13 @@ dc exec db psql -U sportsbook fake_sportsbook       # database shell
 dc exec backend python -m app.cli make-admin you@example.com    # grant admin (remove-admin to revoke)
 ```
 
-## Adding volunteer-scheduler later
+## Adding another app to the server
 
-1. Give its prod compose file the same shape: a unique top-level `name:` (e.g.
-   `volunteer-scheduler`), join the external `web` network with aliases
-   `volunteer-backend` / `volunteer-frontend`, and publish no ports.
-2. Uncomment the `volunteer.martinteran.me` block in `deploy/caddy/Caddyfile`.
-3. Add a `volunteer` A record pointing to the same static IP.
+The Caddy here is shared, so other apps can run on the same server:
+
+1. Give the app's prod compose file the same shape: a unique top-level `name:`, the
+   external `web` network with unique aliases (e.g. `myapp-backend` / `myapp-frontend`),
+   and no published ports.
+2. Add a site block for its hostname to `deploy/caddy/Caddyfile` (through a PR; merging
+   reloads Caddy).
+3. Add an A record for the hostname pointing to the same static IP.

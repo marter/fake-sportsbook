@@ -3,8 +3,6 @@
 A play-money betting app for the NFL, NBA, MLB and WNBA, built mobile-first for the web. Odds come from
 [The Odds API](https://the-odds-api.com). Nothing here involves real money.
 
-Stack and conventions follow `volunteer-scheduler`.
-
 ## Repo layout
 
 - `backend/`: FastAPI, SQLAlchemy, Postgres API
@@ -12,8 +10,8 @@ Stack and conventions follow `volunteer-scheduler`.
 
 ## Local development
 
-Requires Docker Desktop. Host ports are offset from volunteer-scheduler's so both
-stacks can run at once.
+Requires Docker Desktop. Host ports are offset from the defaults (5433/8001/5174) so the
+stack can run alongside other local projects.
 
 ```bash
 docker compose up

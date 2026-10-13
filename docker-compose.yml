@@ -1,4 +1,4 @@
-# Host ports are offset from volunteer-scheduler's (5432/8000/5173) so both stacks can run at once.
+# Host ports are offset from the defaults (5432/8000/5173) so this can run alongside other local stacks.
 services:
   db:
     image: postgres:16-alpine
