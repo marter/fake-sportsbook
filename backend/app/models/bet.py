@@ -24,6 +24,7 @@ class LegResult(enum.StrEnum):
     WON = "won"
     LOST = "lost"
     PUSH = "push"
+    VOID = "void"  # e.g. a player prop whose player didn't play: refunded, drops out of parlays
 
 
 class Bet(UUIDPrimaryKeyMixin, TimestampMixin, Base):

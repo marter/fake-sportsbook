@@ -29,6 +29,8 @@ def run_once() -> None:
         settled = settlement.settle_if_due(db)
         if settled:
             logger.info("Settled %d bet(s)", settled)
+    with SessionLocal() as db:
+        settlement.grade_props_and_settle(db)  # player props, from ESPN box scores
 
 
 def main() -> None:

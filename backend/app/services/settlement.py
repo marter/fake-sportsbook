@@ -60,15 +60,17 @@ def bet_outcome(bet: Bet) -> tuple[BetStatus, int] | None:
     """Final status and payout, or None if the bet can't be decided yet.
 
     Any lost leg loses the whole bet right away, even with games still to play. Otherwise it
-    waits for every leg. Pushed legs drop out (the parlay pays as if they weren't there), so a
-    bet where every leg pushes is refunded its stake.
+    waits for every leg. Pushed and voided legs drop out (the parlay pays as if they weren't
+    there), so a bet where every leg pushes or is voided is refunded its stake.
     """
     results = [leg.result for leg in bet.legs]
     if LegResult.LOST in results:
         return BetStatus.LOST, 0
     if LegResult.PENDING in results:
         return None
-    if all(r == LegResult.PUSH for r in results):
+    if all(r == LegResult.VOID for r in results):
+        return BetStatus.VOID, bet.stake_cents
+    if all(r in (LegResult.PUSH, LegResult.VOID) for r in results):
         return BetStatus.PUSH, bet.stake_cents
     won = [leg.price_american for leg in bet.legs if leg.result == LegResult.WON]
     return BetStatus.WON, parlay_payout_cents(bet.stake_cents, won)
@@ -130,6 +132,7 @@ def _has_settleable_bets(db: Session) -> bool:
             .where(
                 Bet.status == BetStatus.PENDING,
                 BetLeg.result == LegResult.PENDING,
+                BetLeg.participant == "",  # props wait for box-score grading in the worker
                 Game.completed.is_(True),
             )
             .limit(1)
@@ -203,7 +206,7 @@ def settle_completed(db: Session, now: datetime) -> int:
             if leg.result != LegResult.PENDING or not game.completed:
                 continue
             if leg.participant:
-                continue  # player props are graded from box scores (not built yet)
+                continue  # props are graded from box scores (services/props_grading.py)
             assert game.home_score is not None and game.away_score is not None
             leg.result = grade_leg(
                 leg.market,
@@ -286,4 +289,18 @@ def settle_if_due(db: Session, *, force_fetch: bool = False) -> int:
     db.commit()
     if settled:
         logger.info("Settled %d bet(s)", settled)
+    return settled
+
+
+def grade_props_and_settle(db: Session) -> int:
+    """Grades prop legs from ESPN box scores, then settles whatever that decided. Runs from
+    the worker and the CLI (not page loads), under the settlement lock."""
+    from app.services import props_grading
+
+    db.execute(text("SELECT pg_advisory_xact_lock(hashtext('settlement'))"))
+    graded = props_grading.grade_props(db)
+    settled = settle_completed(db, datetime.now(UTC)) if graded else 0
+    db.commit()
+    if graded:
+        logger.info("Graded %d prop leg(s), settled %d bet(s)", graded, settled)
     return settled

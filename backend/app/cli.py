@@ -23,10 +23,12 @@ def set_admin(email: str, is_admin: bool) -> None:
 
 
 def settle_now() -> None:
-    from app.services.settlement import settle_if_due
+    from app.services.settlement import grade_props_and_settle, settle_if_due
 
     with SessionLocal() as db:
         print(f"Settled {settle_if_due(db, force_fetch=True)} bet(s)")
+    with SessionLocal() as db:
+        print(f"Settled {grade_props_and_settle(db)} more after grading player props")
 
 
 def main() -> None:

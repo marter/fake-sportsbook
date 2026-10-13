@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
@@ -56,3 +57,24 @@ class StuckGame(BaseModel):
     away_team: str
     commence_time: datetime
     open_bets: list[StuckBet]
+
+
+class PropToGrade(BaseModel):
+    leg_id: uuid.UUID
+    bet_id: uuid.UUID
+    user_id: uuid.UUID
+    display_name: str
+    market: str
+    outcome: str
+    participant: str
+    point: float | None
+    price_american: int
+    home_team: str
+    away_team: str
+    commence_time: datetime
+    home_score: int | None
+    away_score: int | None
+
+
+class GradeLeg(BaseModel):
+    result: Literal["won", "lost", "push", "void"]
