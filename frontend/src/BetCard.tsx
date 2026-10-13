@@ -17,7 +17,13 @@ const STATUS_LABEL: Record<Bet["status"], string> = {
   void: "Void",
 };
 
-const LEG_MARK: Record<BetLeg["result"], string> = { pending: "•", won: "✓", lost: "✗", push: "–" };
+const LEG_MARK: Record<BetLeg["result"], string> = {
+  pending: "•",
+  won: "✓",
+  lost: "✗",
+  push: "–",
+  void: "–",
+};
 
 function legScore(leg: BetLeg): string {
   const { game } = leg;
@@ -45,7 +51,7 @@ function ParlayCard({ bet, actions }: { bet: Bet; actions?: ReactNode }) {
             </span>
             <span className="parlay-leg-text">
               <span className="parlay-leg-pick">
-                {selectionLabel(leg.market, leg.outcome, leg.point)}{" "}
+                {selectionLabel(leg)}{" "}
                 <span className="hint">{formatAmericanOdds(leg.price_american)}</span>
               </span>
               <span className="hint">
@@ -94,7 +100,7 @@ export function BetCard({ bet, actions }: { bet: Bet; actions?: ReactNode }) {
     <article className="bet-card">
       <div className="bet-card-top">
         <div>
-          <p className="slip-label">{selectionLabel(leg.market, leg.outcome, leg.point)}</p>
+          <p className="slip-label">{selectionLabel(leg)}</p>
           <p className="hint">
             <span className="sport-tag">{game.sport.toUpperCase()}</span>
             {game.away_team} @ {game.home_team}

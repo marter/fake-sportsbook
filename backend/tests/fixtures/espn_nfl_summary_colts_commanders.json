@@ -1,0 +1,1340 @@
+{
+ "boxscore": {
+  "players": [
+   {
+    "team": {
+     "displayName": "Indianapolis Colts",
+     "abbreviation": "IND"
+    },
+    "statistics": [
+     {
+      "name": "passing",
+      "labels": [
+       "C/ATT",
+       "YDS",
+       "AVG",
+       "TD",
+       "INT",
+       "SACKS",
+       "QBR",
+       "RTG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Daniel Jones"
+        },
+        "stats": [
+         "19/34",
+         "143",
+         "4.2",
+         "0",
+         "1",
+         "2-14",
+         "16.1",
+         "53.9"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "rushing",
+      "labels": [
+       "CAR",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Jonathan Taylor"
+        },
+        "stats": [
+         "20",
+         "95",
+         "4.8",
+         "2",
+         "12"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Seth McGowan"
+        },
+        "stats": [
+         "6",
+         "31",
+         "5.2",
+         "0",
+         "11"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Daniel Jones"
+        },
+        "stats": [
+         "4",
+         "2",
+         "0.5",
+         "1",
+         "4"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "receiving",
+      "labels": [
+       "REC",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG",
+       "TGTS"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Laquon Treadwell"
+        },
+        "stats": [
+         "5",
+         "42",
+         "8.4",
+         "0",
+         "13",
+         "6"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Tyler Warren"
+        },
+        "stats": [
+         "5",
+         "41",
+         "8.2",
+         "0",
+         "13",
+         "5"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Ashton Dulin"
+        },
+        "stats": [
+         "3",
+         "29",
+         "9.7",
+         "0",
+         "23",
+         "6"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Josh Downs"
+        },
+        "stats": [
+         "3",
+         "16",
+         "5.3",
+         "0",
+         "9",
+         "4"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Seth McGowan"
+        },
+        "stats": [
+         "1",
+         "7",
+         "7.0",
+         "0",
+         "7",
+         "2"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Deion Burks"
+        },
+        "stats": [
+         "1",
+         "6",
+         "6.0",
+         "0",
+         "6",
+         "2"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jonathan Taylor"
+        },
+        "stats": [
+         "1",
+         "2",
+         "2.0",
+         "0",
+         "2",
+         "4"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "fumbles",
+      "labels": [
+       "FUM",
+       "LOST",
+       "REC"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Daniel Jones"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "defensive",
+      "labels": [
+       "TOT",
+       "SOLO",
+       "SACKS",
+       "TFL",
+       "PD",
+       "QB HTS",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Justin Walley"
+        },
+        "stats": [
+         "8",
+         "5",
+         "1",
+         "1",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Akeem Davis-Gaither"
+        },
+        "stats": [
+         "8",
+         "5",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Grover Stewart"
+        },
+        "stats": [
+         "6",
+         "2",
+         "0",
+         "2",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jaylon Carlies"
+        },
+        "stats": [
+         "5",
+         "3",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Bryce Boettcher"
+        },
+        "stats": [
+         "5",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jerry Tillery"
+        },
+        "stats": [
+         "5",
+         "1",
+         "0",
+         "1",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "DeForest Buckner"
+        },
+        "stats": [
+         "4",
+         "2",
+         "0",
+         "1",
+         "1",
+         "3",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Austin Ajiake"
+        },
+        "stats": [
+         "4",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Caden Curry"
+        },
+        "stats": [
+         "4",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "A.J. Haulcy"
+        },
+        "stats": [
+         "3",
+         "2",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Laiatu Latu"
+        },
+        "stats": [
+         "3",
+         "1",
+         "0.5",
+         "0",
+         "0",
+         "4",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Sauce Gardner"
+        },
+        "stats": [
+         "2",
+         "2",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Arden Key"
+        },
+        "stats": [
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jaylahn Tuimoloau"
+        },
+        "stats": [
+         "2",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Cam Bynum"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "1",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Charvarius Ward"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "3",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Ashton Dulin"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jonathan Owens"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Nick Westbrook-Ikhine"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Adetomiwa Adebawore"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0.5",
+         "0",
+         "0",
+         "2",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Drew Ogletree"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Cam Taylor-Britt"
+        },
+        "stats": [
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "interceptions",
+      "labels": [
+       "INT",
+       "YDS",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Jaylon Carlies"
+        },
+        "stats": [
+         "1",
+         "7",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "kickReturns",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "LONG",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Seth McGowan"
+        },
+        "stats": [
+         "4",
+         "102",
+         "25.5",
+         "29",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "puntReturns",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "LONG",
+       "TD"
+      ],
+      "athletes": []
+     },
+     {
+      "name": "kicking",
+      "labels": [
+       "FG",
+       "PCT",
+       "LONG",
+       "XP",
+       "PTS"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Spencer Shrader"
+        },
+        "stats": [
+         "3/3",
+         "100.0",
+         "52",
+         "3/3",
+         "12"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "punting",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "TB",
+       "In 20",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Rigoberto Sanchez"
+        },
+        "stats": [
+         "4",
+         "213",
+         "53.3",
+         "0",
+         "3",
+         "59"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "team": {
+     "displayName": "Washington Commanders",
+     "abbreviation": "WSH"
+    },
+    "statistics": [
+     {
+      "name": "passing",
+      "labels": [
+       "C/ATT",
+       "YDS",
+       "AVG",
+       "TD",
+       "INT",
+       "SACKS",
+       "QBR",
+       "RTG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Athan Kaliakmanis"
+        },
+        "stats": [
+         "15/33",
+         "186",
+         "5.6",
+         "1",
+         "1",
+         "1-9",
+         "21.4",
+         "60.9"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Marcus Mariota"
+        },
+        "stats": [
+         "3/4",
+         "46",
+         "11.5",
+         "0",
+         "0",
+         "1-6",
+         "88.7",
+         "112.5"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "rushing",
+      "labels": [
+       "CAR",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Marcus Mariota"
+        },
+        "stats": [
+         "1",
+         "35",
+         "35.0",
+         "0",
+         "35"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Austin Ekeler"
+        },
+        "stats": [
+         "4",
+         "29",
+         "7.3",
+         "0",
+         "10"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Athan Kaliakmanis"
+        },
+        "stats": [
+         "3",
+         "16",
+         "5.3",
+         "0",
+         "9"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jacory Croskey-Merritt"
+        },
+        "stats": [
+         "9",
+         "15",
+         "1.7",
+         "0",
+         "6"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Craig Reynolds"
+        },
+        "stats": [
+         "2",
+         "4",
+         "2.0",
+         "0",
+         "4"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Kaytron Allen"
+        },
+        "stats": [
+         "3",
+         "1",
+         "0.3",
+         "0",
+         "2"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "receiving",
+      "labels": [
+       "REC",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG",
+       "TGTS"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Dyami Brown"
+        },
+        "stats": [
+         "3",
+         "65",
+         "21.7",
+         "0",
+         "48",
+         "4"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Treylon Burks"
+        },
+        "stats": [
+         "1",
+         "47",
+         "47.0",
+         "1",
+         "47",
+         "3"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jacory Croskey-Merritt"
+        },
+        "stats": [
+         "2",
+         "35",
+         "17.5",
+         "0",
+         "35",
+         "4"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Stefon Diggs"
+        },
+        "stats": [
+         "5",
+         "35",
+         "7.0",
+         "0",
+         "10",
+         "9"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Antonio Williams"
+        },
+        "stats": [
+         "3",
+         "21",
+         "7.0",
+         "0",
+         "9",
+         "8"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Brandon Coleman"
+        },
+        "stats": [
+         "1",
+         "13",
+         "13.0",
+         "0",
+         "13",
+         "1"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Austin Ekeler"
+        },
+        "stats": [
+         "1",
+         "11",
+         "11.0",
+         "0",
+         "11",
+         "2"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Chig Okonkwo"
+        },
+        "stats": [
+         "2",
+         "5",
+         "2.5",
+         "0",
+         "3",
+         "4"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Colson Yankoff"
+        },
+        "stats": [
+         "0",
+         "0",
+         "0.0",
+         "0",
+         "0",
+         "1"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "fumbles",
+      "labels": [
+       "FUM",
+       "LOST",
+       "REC"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Odafe Oweh"
+        },
+        "stats": [
+         "0",
+         "0",
+         "1"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "defensive",
+      "labels": [
+       "TOT",
+       "SOLO",
+       "SACKS",
+       "TFL",
+       "PD",
+       "QB HTS",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Amik Robertson"
+        },
+        "stats": [
+         "9",
+         "7",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jeremy Reaves"
+        },
+        "stats": [
+         "8",
+         "4",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Sonny Styles"
+        },
+        "stats": [
+         "8",
+         "4",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Rasul Douglas"
+        },
+        "stats": [
+         "6",
+         "5",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Quan Martin"
+        },
+        "stats": [
+         "5",
+         "3",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Frankie Luvu"
+        },
+        "stats": [
+         "5",
+         "1",
+         "0",
+         "1",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Daron Payne"
+        },
+        "stats": [
+         "4",
+         "3",
+         "0",
+         "0",
+         "0",
+         "2",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "K'Lavon Chaisson"
+        },
+        "stats": [
+         "4",
+         "0",
+         "0.5",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Javon Kinlaw"
+        },
+        "stats": [
+         "3",
+         "3",
+         "0",
+         "0",
+         "2",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Percy Butler"
+        },
+        "stats": [
+         "3",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Tyler Owens"
+        },
+        "stats": [
+         "2",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Tim Settle"
+        },
+        "stats": [
+         "2",
+         "0",
+         "0.5",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Dyami Brown"
+        },
+        "stats": [
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Kain Medrano"
+        },
+        "stats": [
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Odafe Oweh"
+        },
+        "stats": [
+         "1",
+         "1",
+         "1",
+         "1",
+         "0",
+         "1",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Fabian Moreau"
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Josh Conerly Jr."
+        },
+        "stats": [
+         "1",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Joshua Josephs"
+        },
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Dorance Armstrong"
+        },
+        "stats": [
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "interceptions",
+      "labels": [
+       "INT",
+       "YDS",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Rasul Douglas"
+        },
+        "stats": [
+         "1",
+         "3",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "kickReturns",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "LONG",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Dyami Brown"
+        },
+        "stats": [
+         "3",
+         "82",
+         "27.3",
+         "37",
+         "0"
+        ]
+       },
+       {
+        "athlete": {
+         "displayName": "Jaylin Lane"
+        },
+        "stats": [
+         "3",
+         "80",
+         "26.7",
+         "27",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "puntReturns",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "LONG",
+       "TD"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Jaylin Lane"
+        },
+        "stats": [
+         "2",
+         "17",
+         "8.5",
+         "9",
+         "0"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "kicking",
+      "labels": [
+       "FG",
+       "PCT",
+       "LONG",
+       "XP",
+       "PTS"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Drew Stevens"
+        },
+        "stats": [
+         "2/2",
+         "100.0",
+         "31",
+         "1/1",
+         "7"
+        ]
+       }
+      ]
+     },
+     {
+      "name": "punting",
+      "labels": [
+       "NO",
+       "YDS",
+       "AVG",
+       "TB",
+       "In 20",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "athlete": {
+         "displayName": "Tress Way"
+        },
+        "stats": [
+         "5",
+         "189",
+         "37.8",
+         "0",
+         "3",
+         "49"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

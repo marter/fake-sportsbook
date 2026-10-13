@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { MarketHeaders } from "./MarketHelp";
 import { useBetSlip } from "./betslip/BetSlipContext";
 import type { Game, Market, OddsLine } from "./types";
@@ -93,6 +94,11 @@ export function GameCard({ game, spreadLabel }: GameCardProps) {
         isPicked={isPicked}
         onSelect={select}
       />
+      {game.has_props && (
+        <Link to={`/props/${game.id}`} className="props-link">
+          Player props ›
+        </Link>
+      )}
     </article>
   );
 }

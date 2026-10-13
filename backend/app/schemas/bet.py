@@ -4,7 +4,6 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.bet import BetStatus, LegResult
-from app.models.game import Market
 from app.models.ledger import LedgerKind
 
 MIN_STAKE_CENTS = 100  # $1
@@ -42,7 +41,8 @@ class BetGame(BaseModel):
 class BetLegRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    market: Market
+    market: str
+    participant: str
     outcome: str
     price_american: int
     point: float | None

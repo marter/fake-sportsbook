@@ -8,13 +8,15 @@ from sqlalchemy.orm import Session, selectinload
 from app.api.deps import require_admin
 from app.api.routes.bets import BetState, bets_for_user
 from app.core.db import get_db
-from app.models.bet import Bet, BetLeg, BetStatus
+from app.models.bet import Bet, BetLeg, BetStatus, LegResult
 from app.models.ledger import LedgerEntry, LedgerKind
 from app.models.user import User
 from app.schemas.admin import (
     AdminUserBets,
     AdminUserRead,
     BalanceAdjustment,
+    GradeLeg,
+    PropToGrade,
     StuckBet,
     StuckGame,
     VoidBet,
@@ -187,3 +189,56 @@ def list_stuck_games(
             )
         )
     return result
+
+
+@router.get("/props-to-grade", response_model=list[PropToGrade])
+def props_to_grade(
+    db: Session = Depends(get_db), _admin: User = Depends(require_admin)
+) -> list[PropToGrade]:
+    """Player-prop legs automatic grading couldn't settle (ESPN couldn't match the game or
+    player) 12+ hours after the game. Grade them by hand."""
+    from app.services import props_grading
+
+    names = dict(db.execute(select(User.id, User.display_name)).all())
+    return [
+        PropToGrade(
+            leg_id=leg.id,
+            bet_id=leg.bet_id,
+            user_id=leg.bet.user_id,
+            display_name=names.get(leg.bet.user_id, "?"),
+            market=leg.market,
+            outcome=leg.outcome,
+            participant=leg.participant,
+            point=leg.point,
+            price_american=leg.price_american,
+            home_team=leg.game.home_team,
+            away_team=leg.game.away_team,
+            commence_time=leg.game.commence_time,
+            home_score=leg.game.home_score,
+            away_score=leg.game.away_score,
+        )
+        for leg in props_grading.legs_needing_manual_grading(db)
+    ]
+
+
+@router.post("/legs/{leg_id}/grade", status_code=204)
+def grade_leg_manually(
+    leg_id: uuid.UUID,
+    payload: GradeLeg,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+) -> None:
+    """Sets an open player-prop leg's result by hand, then settles its bet if that decides it."""
+    db.execute(text("SELECT pg_advisory_xact_lock(hashtext('settlement'))"))
+    leg = db.scalars(select(BetLeg).where(BetLeg.id == leg_id).with_for_update()).first()
+    if leg is None:
+        raise HTTPException(status_code=404, detail="Leg not found")
+    bet = db.get(Bet, leg.bet_id)
+    assert bet is not None
+    if not leg.participant:
+        raise HTTPException(status_code=400, detail="Only player-prop legs are graded by hand")
+    if leg.result != LegResult.PENDING or bet.status != BetStatus.PENDING:
+        raise HTTPException(status_code=400, detail="That leg is already graded")
+    leg.result = LegResult(payload.result)
+    settlement.settle_completed(db, datetime.now(UTC))
+    db.commit()

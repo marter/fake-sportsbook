@@ -15,6 +15,8 @@ export interface OddsLine {
   id: string;
   market: Market;
   outcome: string;
+  /** The player for a prop; empty for game-level markets. */
+  participant: string;
   price_american: number;
   point: number | null;
 }
@@ -25,6 +27,8 @@ export interface Game {
   away_team: string;
   commence_time: string;
   odds_lines: OddsLine[];
+  /** This league offers player props (they open about two days before kickoff). */
+  has_props: boolean;
 }
 
 export interface GamesResponse {
@@ -33,7 +37,7 @@ export interface GamesResponse {
 }
 
 export type BetStatus = "pending" | "won" | "lost" | "push" | "void";
-export type LegResult = "pending" | "won" | "lost" | "push";
+export type LegResult = "pending" | "won" | "lost" | "push" | "void";
 
 export interface BetGame {
   id: string;
@@ -49,6 +53,7 @@ export interface BetGame {
 export interface BetLeg {
   market: Market;
   outcome: string;
+  participant: string;
   price_american: number;
   point: number | null;
   result: LegResult;
@@ -126,4 +131,35 @@ export interface Sport {
   upcoming_games: number;
   spread_label: string;
   season_note: string;
+}
+
+export interface PropMarket {
+  key: string;
+  label: string;
+  short: string;
+  kind: "over_under" | "yes";
+}
+
+export interface GameProps {
+  game: Game;
+  unavailable_reason: string | null;
+  markets: PropMarket[];
+  lines: OddsLine[];
+}
+
+export interface PropToGrade {
+  leg_id: string;
+  bet_id: string;
+  user_id: string;
+  display_name: string;
+  market: string;
+  outcome: string;
+  participant: string;
+  point: number | null;
+  price_american: number;
+  home_team: string;
+  away_team: string;
+  commence_time: string;
+  home_score: number | null;
+  away_score: number | null;
 }

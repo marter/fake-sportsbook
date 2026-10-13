@@ -1,0 +1,452 @@
+{
+ "events": [
+  {
+   "id": "401872965",
+   "date": "2026-10-04T13:30Z",
+   "name": "Indianapolis Colts at Washington Commanders",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "13",
+       "team": {
+        "displayName": "Washington Commanders",
+        "abbreviation": "WSH"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "30",
+       "team": {
+        "displayName": "Indianapolis Colts",
+        "abbreviation": "IND"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872971",
+   "date": "2026-10-04T17:00Z",
+   "name": "New England Patriots at Buffalo Bills",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "26",
+       "team": {
+        "displayName": "Buffalo Bills",
+        "abbreviation": "BUF"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "29",
+       "team": {
+        "displayName": "New England Patriots",
+        "abbreviation": "NE"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872972",
+   "date": "2026-10-04T17:00Z",
+   "name": "New York Jets at Chicago Bears",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "23",
+       "team": {
+        "displayName": "Chicago Bears",
+        "abbreviation": "CHI"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "12",
+       "team": {
+        "displayName": "New York Jets",
+        "abbreviation": "NYJ"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872969",
+   "date": "2026-10-04T17:00Z",
+   "name": "Jacksonville Jaguars at Cincinnati Bengals",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "17",
+       "team": {
+        "displayName": "Cincinnati Bengals",
+        "abbreviation": "CIN"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "22",
+       "team": {
+        "displayName": "Jacksonville Jaguars",
+        "abbreviation": "JAX"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872966",
+   "date": "2026-10-04T17:00Z",
+   "name": "Arizona Cardinals at New York Giants",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "36",
+       "team": {
+        "displayName": "New York Giants",
+        "abbreviation": "NYG"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "24",
+       "team": {
+        "displayName": "Arizona Cardinals",
+        "abbreviation": "ARI"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872970",
+   "date": "2026-10-04T17:00Z",
+   "name": "Los Angeles Rams at Philadelphia Eagles",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "20",
+       "team": {
+        "displayName": "Philadelphia Eagles",
+        "abbreviation": "PHI"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "24",
+       "team": {
+        "displayName": "Los Angeles Rams",
+        "abbreviation": "LAR"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872968",
+   "date": "2026-10-04T17:00Z",
+   "name": "Green Bay Packers at Tampa Bay Buccaneers",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "14",
+       "team": {
+        "displayName": "Tampa Bay Buccaneers",
+        "abbreviation": "TB"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "17",
+       "team": {
+        "displayName": "Green Bay Packers",
+        "abbreviation": "GB"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872973",
+   "date": "2026-10-04T17:00Z",
+   "name": "Tennessee Titans at Baltimore Ravens",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "24",
+       "team": {
+        "displayName": "Baltimore Ravens",
+        "abbreviation": "BAL"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "18",
+       "team": {
+        "displayName": "Tennessee Titans",
+        "abbreviation": "TEN"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872967",
+   "date": "2026-10-04T17:00Z",
+   "name": "Dallas Cowboys at Houston Texans",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "30",
+       "team": {
+        "displayName": "Houston Texans",
+        "abbreviation": "HOU"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "34",
+       "team": {
+        "displayName": "Dallas Cowboys",
+        "abbreviation": "DAL"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872974",
+   "date": "2026-10-04T20:05Z",
+   "name": "Miami Dolphins at Minnesota Vikings",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "15",
+       "team": {
+        "displayName": "Minnesota Vikings",
+        "abbreviation": "MIN"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "10",
+       "team": {
+        "displayName": "Miami Dolphins",
+        "abbreviation": "MIA"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872976",
+   "date": "2026-10-04T20:25Z",
+   "name": "Kansas City Chiefs at Las Vegas Raiders",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "27",
+       "team": {
+        "displayName": "Las Vegas Raiders",
+        "abbreviation": "LV"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "30",
+       "team": {
+        "displayName": "Kansas City Chiefs",
+        "abbreviation": "KC"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872975",
+   "date": "2026-10-04T20:25Z",
+   "name": "Denver Broncos at San Francisco 49ers",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "24",
+       "team": {
+        "displayName": "San Francisco 49ers",
+        "abbreviation": "SF"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "14",
+       "team": {
+        "displayName": "Denver Broncos",
+        "abbreviation": "DEN"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872977",
+   "date": "2026-10-04T20:25Z",
+   "name": "Los Angeles Chargers at Seattle Seahawks",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "30",
+       "team": {
+        "displayName": "Seattle Seahawks",
+        "abbreviation": "SEA"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "23",
+       "team": {
+        "displayName": "Los Angeles Chargers",
+        "abbreviation": "LAC"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872978",
+   "date": "2026-10-05T00:20Z",
+   "name": "Detroit Lions at Carolina Panthers",
+   "status": {
+    "type": {
+     "completed": true
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "32",
+       "team": {
+        "displayName": "Carolina Panthers",
+        "abbreviation": "CAR"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "26",
+       "team": {
+        "displayName": "Detroit Lions",
+        "abbreviation": "DET"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

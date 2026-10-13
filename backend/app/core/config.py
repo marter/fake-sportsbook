@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     # Skip score checks once the API reports fewer credits than this, so the daily odds
     # refresh still has room.
     scores_min_credits: int = 50
+    # Player props are fetched for a game the first time someone opens them, but only once
+    # kickoff is this close (lines are rarely posted earlier).
+    props_window_hours: int = 48
+
     # Background worker (app.worker): how often it refreshes odds and settles bets.
     worker_interval_seconds: int = 900
 
