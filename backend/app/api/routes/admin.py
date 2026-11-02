@@ -14,7 +14,9 @@ from app.models.user import User
 from app.schemas.admin import (
     AdminUserBets,
     AdminUserRead,
+    ApiUsage,
     BalanceAdjustment,
+    CreditDay,
     GradeLeg,
     PropToGrade,
     StuckBet,
@@ -22,7 +24,7 @@ from app.schemas.admin import (
     VoidBet,
 )
 from app.schemas.bet import BetRead, LedgerEntryRead
-from app.services import settlement, wallet
+from app.services import api_usage, settlement, wallet
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -189,6 +191,24 @@ def list_stuck_games(
             )
         )
     return result
+
+
+@router.get("/api-usage", response_model=ApiUsage)
+def get_api_usage(db: Session = Depends(get_db), _admin: User = Depends(require_admin)) -> ApiUsage:
+    usage = api_usage.credit_usage(db)
+    return ApiUsage(
+        monthly_credits=usage.monthly_credits,
+        used=usage.used,
+        remaining=usage.remaining,
+        projected=usage.projected,
+        resets_on=usage.resets_on,
+        floor=usage.floor,
+        status=usage.status,
+        last_call_at=usage.last_call_at,
+        by_kind=usage.by_kind,
+        by_day=[CreditDay(day=d, credits=c) for d, c in usage.by_day.items()],
+        last_month_used=usage.last_month_used,
+    )
 
 
 @router.get("/props-to-grade", response_model=list[PropToGrade])

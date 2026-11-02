@@ -64,7 +64,12 @@ npm run dev
   logs (`docker compose logs backend`). Accounts created before this feature were marked
   verified by the migration.
 - **Admins** can list users and adjust balances (recorded as ledger entries with a note).
-  Admin is granted only from the server: `python -m app.cli make-admin <email>`.
+  Admin is granted only from the server: `python -m app.cli make-admin <email>`. Every admin
+  gets an email when someone signs up (`services/notifications.py`, sent after the response
+  so it never slows sign-up). The admin page also shows this month's Odds API credits
+  (`services/api_usage.py`): used and left, by kind and by day, and a projection to the reset
+  at the last 7 days' pace that warns when we're on track to run out
+  (`ODDS_API_MONTHLY_CREDITS`, default 500).
 - **Sports**: defined in `backend/app/sports.py` (API key, name, typical game length, what
   the spread is called, off-season note) and switched on with `ENABLED_SPORTS`. Each league is
   a tab on the Games page (`/games/nba`). Leagues out of season (per The Odds API's free
