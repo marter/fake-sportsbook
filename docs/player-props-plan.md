@@ -1,6 +1,6 @@
 # Player props: plan
 
-Status: feature-complete on the `feat/player-props` branch, not merged to main yet.
+Status: shipped Oct 13, 2026 (#21): NFL Anytime TD and Passing yards. Health check: `deploy/props-health.sql`.
 
 Player props are bets on one player's stats rather than the game result, e.g.
 "Jalen Hurts over 186.5 passing yards" or "Travis Kelce scores a touchdown (anytime)".
@@ -83,4 +83,17 @@ are fine for play money; an admin can force a refresh).
    receiving and return TDs; not in the box score = void; admin "Props to grade" list after a
    12h grace period; tested against a saved real ESPN box score)*
 5. **Tests** throughout; rehearse on dev with fixture props and a saved ESPN box score.
-6. **Decide credits, then merge.**
+6. **Decide credits, then merge.** *(done: two markets on the free plan)*
+
+## Health check (Nov 2, 2026, three weeks live)
+
+Run with `deploy/props-health.sql`.
+
+- **Credits are fine.** Props used about 20 credits in total (10 games fetched × 2).
+  Game odds and score fetches use the rest, about 75–85 credits a week, and October ended
+  with about 180 left. Rushing and Receiving yards would add about 2 credits per opened game,
+  roughly 10–20 a month at current traffic.
+- **Grading is keeping up.** 15 prop legs: 11 lost, 2 won, 2 pending on games that haven't
+  started yet. Nothing is stuck past the 12h grace period, there are no voids (no sign of
+  name-matching misses), and the worker logged no ESPN or props errors.
+- Traffic is low, so this is a small sample. Run it again after a busy NFL week.
