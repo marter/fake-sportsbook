@@ -78,8 +78,8 @@ export function ApiCredits() {
       <p className="hint">
         {usage.used} used this month, on pace for about {usage.projected} by{" "}
         {shortDate(usage.resets_on)}.
-        {usage.last_month_used !== null && <> Last month: {usage.last_month_used}.</>} Score
-        checks and props pause below {usage.floor}.
+        {usage.last_month_used !== null && <> Last month: {usage.last_month_used}.</>} Props
+        and paid score checks pause below {usage.floor} (scores from ESPN carry on).
       </p>
 
       {kinds.length > 0 && (

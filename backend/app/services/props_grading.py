@@ -1,7 +1,7 @@
 """Grades player-prop legs from ESPN box scores.
 
 The Odds API has odds but no player stats, so finished games are looked up in ESPN's public
-JSON (no key; unofficial, so it can change without notice). This runs from the background
+JSON (see espn.py). This runs from the background
 worker and the `settle` CLI, never on page loads, so a slow ESPN can't slow the app down.
 Legs that can't be graded automatically (game or player not found) stay open and, after a
 grace period, show up on the admin page to grade by hand.
@@ -13,7 +13,6 @@ import unicodedata
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from zoneinfo import ZoneInfo
 
 import httpx
 from sqlalchemy import select
@@ -21,26 +20,16 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models.bet import Bet, BetLeg, BetStatus, LegResult
 from app.models.game import Game
+from app.services.espn import EASTERN, ESPN_PATHS, fetch_espn, team_name
 from app.sports import BY_API_KEY, prop_market
 
 logger = logging.getLogger(__name__)
 
-ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports"
-ESPN_PATHS = {"nfl": "football/nfl", "nba": "basketball/nba", "mlb": "baseball/mlb"}
-EASTERN = ZoneInfo("America/New_York")
 # Box-score categories whose TD column counts toward "anytime touchdown". Passing TDs don't
 # count (the thrower isn't the scorer), matching real sportsbooks.
 TD_CATEGORIES = ("rushing", "receiving", "kickReturns", "puntReturns")
 # Don't ask an admin to grade a leg until automatic grading has had this long after the game.
 MANUAL_GRADING_AFTER = timedelta(hours=12)
-
-
-def fetch_espn(path: str, params: dict[str, str]) -> dict[str, Any]:
-    response = httpx.get(
-        f"{ESPN_BASE}/{path}", params=params, headers={"User-Agent": "Mozilla/5.0"}, timeout=10
-    )
-    response.raise_for_status()
-    return response.json()
 
 
 def normalize_name(name: str) -> str:
@@ -135,7 +124,7 @@ def find_espn_event(game: Game, sport_path: str) -> str | None:
         board = fetch_espn(f"{sport_path}/scoreboard", {"dates": day.strftime("%Y%m%d")})
         for event in board.get("events", []):
             competitors = event.get("competitions", [{}])[0].get("competitors", [])
-            teams = {c["team"]["displayName"] for c in competitors}
+            teams = {team_name(c["team"]["displayName"]) for c in competitors}
             if teams == wanted:
                 if not event.get("status", {}).get("type", {}).get("completed"):
                     return None  # found, but ESPN doesn't have it final yet

@@ -18,7 +18,7 @@ from app.core.config import get_settings
 from app.models.bet import Bet, BetLeg, BetStatus, LegResult
 from app.models.game import Game, Market, OddsFetch
 from app.models.ledger import LedgerKind
-from app.services import odds, wallet
+from app.services import espn, odds, wallet
 from app.services.odds_math import parlay_payout_cents
 from app.sports import BY_API_KEY, SPORTS, Sport
 
@@ -232,6 +232,76 @@ def settle_completed(db: Session, now: datetime) -> int:
     return settled
 
 
+def _record_scores(
+    db: Session,
+    sport: Sport,
+    now: datetime,
+    events: list[dict[str, Any]],
+    source: str,
+    remaining: int | None,
+) -> None:
+    apply_scores(db, events)
+    db.add(
+        OddsFetch(
+            sport_key=sport.api_key,
+            kind="scores",
+            fetched_at=now,
+            source=source,
+            event_count=len(events),
+            requests_remaining=remaining,
+        )
+    )
+
+
+def _check_odds_api(db: Session, sport: Sport, now: datetime) -> None:
+    """The Odds API's scores endpoint: 2 credits, skipped when credits are low."""
+    if odds.low_on_credits(db):
+        logger.warning(
+            "Skipping %s score check: under %d API credits left",
+            sport.name,
+            get_settings().scores_min_credits,
+        )
+        return
+    try:
+        events, remaining = odds.fetch_scores_from_api(sport)
+    except httpx.HTTPError:
+        logger.exception("The Odds API %s scores request failed; will retry", sport.name)
+        return
+    _record_scores(db, sport, now, events, "api", remaining)
+
+
+def _check_espn_then_api(
+    db: Session, sport: Sport, games: list[Game], now: datetime, *, force_fetch: bool
+) -> None:
+    """Free ESPN scores first. Falls back to The Odds API (at most every
+    `scores_fallback_hours` per sport, since it costs credits) when ESPN is down or still
+    doesn't list a game hours after it should have ended, e.g. a team name we don't map."""
+    settings = get_settings()
+    try:
+        events, unlisted = espn.final_scores(sport, games)
+    except espn.EspnError:
+        logger.exception("ESPN %s scores failed; trying The Odds API", sport.name)
+        # Logged anyway, so the usual throttle keeps page loads from retrying ESPN each time.
+        _record_scores(db, sport, now, [], "espn", None)
+        needs_fallback = True
+    else:
+        _record_scores(db, sport, now, events, "espn", None)
+        for game in unlisted:
+            logger.warning(
+                "ESPN doesn't list %s @ %s (%s)", game.away_team, game.home_team, game.external_id
+            )
+        overdue_after = timedelta(minutes=sport.game_minutes, hours=settings.scores_fallback_hours)
+        needs_fallback = any(now - g.commence_time > overdue_after for g in unlisted)
+    if not needs_fallback:
+        return
+    last_api = odds.latest_fetch(db, sport.api_key, kind="scores", source="api")
+    recent = last_api is not None and now - last_api.fetched_at < timedelta(
+        hours=settings.scores_fallback_hours
+    )
+    if not recent or force_fetch:
+        _check_odds_api(db, sport, now)
+
+
 def settle_if_due(db: Session, *, force_fetch: bool = False) -> int:
     """Fetches scores if any open bet is waiting on a finished game, then settles what it can.
 
@@ -246,44 +316,22 @@ def settle_if_due(db: Session, *, force_fetch: bool = False) -> int:
     db.execute(text("SELECT pg_advisory_xact_lock(hashtext('settlement'))"))
     awaiting = _games_awaiting_result(db, now)  # another request may have just settled them
 
-    low_credits = settings.odds_api_key and odds.low_on_credits(db)
-    if awaiting and low_credits:
-        logger.warning(
-            "Skipping score check: under %d API credits left", settings.scores_min_credits
-        )
     by_sport: dict[Sport, list[Game]] = {}
     for game in awaiting:
         by_sport.setdefault(_sport_of(game), []).append(game)
     for sport, games in by_sport.items():
-        if low_credits:
-            break
         last = odds.latest_fetch(db, sport.api_key, kind="scores")
         throttled = last is not None and now - last.fetched_at < timedelta(
             minutes=settings.scores_min_interval_minutes
         )
         if throttled and not force_fetch:
             continue
-        try:
-            if settings.odds_api_key:
-                events, remaining = odds.fetch_scores_from_api(sport)
-                source = "api"
-            else:
-                events, remaining = fixture_scores(games), None
-                source = "fixture"
-        except httpx.HTTPError:
-            logger.exception("The Odds API %s scores request failed; will retry", sport.name)
-            continue
-        apply_scores(db, events)
-        db.add(
-            OddsFetch(
-                sport_key=sport.api_key,
-                kind="scores",
-                fetched_at=now,
-                source=source,
-                event_count=len(events),
-                requests_remaining=remaining,
-            )
-        )
+        if not settings.odds_api_key:
+            _record_scores(db, sport, now, fixture_scores(games), "fixture", None)
+        elif settings.scores_source == "espn" and sport.slug in espn.ESPN_PATHS:
+            _check_espn_then_api(db, sport, games, now, force_fetch=force_fetch)
+        else:
+            _check_odds_api(db, sport, now)
 
     settled = settle_completed(db, now)
     db.commit()

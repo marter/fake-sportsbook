@@ -50,8 +50,14 @@ class Settings(BaseSettings):
     # Stop spending credits on a game with no final score this long after kickoff (postponed,
     # cancelled...); it shows up on the admin page instead, where its bets can be voided.
     settlement_give_up_hours: int = 24
-    # Skip score checks once the API reports fewer credits than this, so the daily odds
-    # refresh still has room.
+    # Where final scores come from: "espn" (free; The Odds API only as a fallback) or
+    # "odds_api" (2 credits per check). See services/espn.py.
+    scores_source: str = "espn"
+    # With ESPN: call The Odds API for a sport at most this often, and only when ESPN is down
+    # or still doesn't list a game this long after it should have ended.
+    scores_fallback_hours: int = 3
+    # Skip Odds API score checks once it reports fewer credits than this, so the daily odds
+    # refresh still has room. (ESPN score checks carry on.)
     scores_min_credits: int = 50
     # Player props are fetched for a game the first time someone opens them, but only once
     # kickoff is this close (lines are rarely posted earlier).

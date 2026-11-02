@@ -217,6 +217,7 @@ def test_api_mode_uses_scores_endpoint(
     _, line, game = place(client, auth_headers, "h2h", 0, 1_000)
     db_game = start_game(db, game["id"])
     monkeypatch.setattr(get_settings(), "odds_api_key", "test-key")
+    monkeypatch.setattr(get_settings(), "scores_source", "odds_api")
     events = [
         {
             "id": db_game.external_id,

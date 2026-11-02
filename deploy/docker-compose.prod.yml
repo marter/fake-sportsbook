@@ -20,6 +20,7 @@ x-backend-env: &backend-env
   JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in deploy/.env.prod}
   ODDS_API_KEY: ${ODDS_API_KEY:-}
   ODDS_API_MONTHLY_CREDITS: ${ODDS_API_MONTHLY_CREDITS:-500}
+  SCORES_SOURCE: ${SCORES_SOURCE:-espn}
   MAX_USERS: ${MAX_USERS:-5}
   ENABLED_SPORTS: ${ENABLED_SPORTS:-nfl,nba,mlb,wnba}
   EMAIL_BACKEND: resend
