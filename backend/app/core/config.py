@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     # ones show as dimmed tabs; leave one out entirely to hide its tab and never fetch it.
     enabled_sports: Annotated[list[str], NoDecode] = ["nfl", "nba", "mlb", "wnba"]
     odds_bookmaker: str = "draftkings"
+    # Credits in our Odds API plan per month (free plan: 500). Shown on the admin page.
+    odds_api_monthly_credits: int = 500
     # Odds are refetched at most this often. Each refetch costs 3 credits (3 markets), so
     # daily is ~90 of the free plan's 500 monthly credits.
     odds_cache_hours: int = 24

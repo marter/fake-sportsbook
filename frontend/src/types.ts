@@ -163,3 +163,17 @@ export interface PropToGrade {
   home_score: number | null;
   away_score: number | null;
 }
+
+export interface ApiUsage {
+  monthly_credits: number;
+  used: number;
+  remaining: number;
+  projected: number;
+  resets_on: string; // YYYY-MM-DD
+  floor: number;
+  status: "ok" | "warning" | "paused";
+  last_call_at: string | null;
+  by_kind: Record<string, number>;
+  by_day: { day: string; credits: number }[];
+  last_month_used: number | null;
+}

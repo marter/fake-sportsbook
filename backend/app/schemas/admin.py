@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
@@ -78,3 +78,25 @@ class PropToGrade(BaseModel):
 
 class GradeLeg(BaseModel):
     result: Literal["won", "lost", "push", "void"]
+
+
+class CreditDay(BaseModel):
+    day: date
+    credits: int
+
+
+class ApiUsage(BaseModel):
+    """This month's Odds API credits. `status` is "ok", "warning" (on pace to run out before
+    the reset) or "paused" (under the floor, so score checks and props fetches are skipped)."""
+
+    monthly_credits: int
+    used: int
+    remaining: int
+    projected: int
+    resets_on: date
+    floor: int
+    status: Literal["ok", "warning", "paused"]
+    last_call_at: datetime | None
+    by_kind: dict[str, int]
+    by_day: list[CreditDay]
+    last_month_used: int | None

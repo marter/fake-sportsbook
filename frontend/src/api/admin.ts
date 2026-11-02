@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { AdminUser, Bet, LedgerEntry, PropToGrade, StuckGame } from "../types";
+import type { AdminUser, ApiUsage, Bet, LedgerEntry, PropToGrade, StuckGame } from "../types";
 
 export async function fetchUsers(): Promise<AdminUser[]> {
   const { data } = await apiClient.get<AdminUser[]>("/api/admin/users");
@@ -59,4 +59,9 @@ export async function gradeLeg(
   result: "won" | "lost" | "push" | "void",
 ): Promise<void> {
   await apiClient.post(`/api/admin/legs/${legId}/grade`, { result });
+}
+
+export async function fetchApiUsage(): Promise<ApiUsage> {
+  const { data } = await apiClient.get<ApiUsage>("/api/admin/api-usage");
+  return data;
 }

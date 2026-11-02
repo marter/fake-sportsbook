@@ -12,6 +12,7 @@ import {
 import type { Adjustment } from "../api/admin";
 import { extractErrorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import { ApiCredits } from "../ApiCredits";
 import { Modal } from "../Modal";
 import { PropsToGrade } from "../PropsToGrade";
 import { formatDateTime, formatMoney, formatSignedMoney, parseDollars } from "../format";
@@ -275,6 +276,7 @@ export function AdminPage() {
           ))}
         </section>
       )}
+      <ApiCredits />
       <h1>Users</h1>
       {error && <p className="form-error">{extractErrorMessage(error, "Couldn't load users.")}</p>}
       <ul className="admin-users">

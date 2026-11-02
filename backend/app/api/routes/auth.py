@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,7 @@ from app.schemas.auth import (
     VerifyEmailRequest,
 )
 from app.schemas.user import UserRead
-from app.services import verification, wallet
+from app.services import notifications, verification, wallet
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -37,7 +37,9 @@ def registration_status(db: Session = Depends(get_db)) -> RegistrationStatus:
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+def register(
+    payload: RegisterRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
+) -> TokenResponse:
     # Serialize sign-ups so two at once can't both squeeze under the limit.
     verification.purge_stale_unverified(db)
     db.execute(text("SELECT pg_advisory_xact_lock(hashtext('register'))"))
@@ -60,6 +62,9 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
     if get_settings().email_verification_required:
         verification.send_verification(db, user)
     db.commit()
+    # Sent after the response so a slow mail provider doesn't hold up sign-up.
+    notice = notifications.signup_notice(db, user)
+    background_tasks.add_task(notifications.send_signup_notice, notice)
 
     return TokenResponse(access_token=create_access_token(subject=str(user.id)))
 

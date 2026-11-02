@@ -11,6 +11,8 @@
   --accent-contrast: #fff;
   --danger: #b3261e;
   --danger-bg: rgba(179, 38, 30, 0.08);
+  --warning: #a15c07;
+  --warning-bg: rgba(217, 119, 6, 0.12);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -49,6 +51,8 @@
     --accent-contrast: #0b1a10;
     --danger: #ff8178;
     --danger-bg: rgba(255, 129, 120, 0.12);
+    --warning: #fbbf24;
+    --warning-bg: rgba(251, 191, 36, 0.14);
   }
 }
 
@@ -678,6 +682,11 @@ h2 {
   color: var(--danger);
 }
 
+.status-badge--warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
 .status-badge--admin {
   margin-left: var(--space-2);
   font-size: 11px;
@@ -1104,6 +1113,105 @@ button.btn-secondary.btn-danger-text:hover:not(:disabled) {
   margin: var(--space-1) 0 0;
   padding-left: var(--space-4);
   font-size: 14px;
+}
+
+/* ---- Admin: Odds API credits ---- */
+
+.credits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-raised);
+}
+
+.credits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.credits h2,
+.credits p {
+  margin: 0;
+}
+
+.credits-headline strong {
+  font-size: 28px;
+  color: var(--text-h);
+}
+
+.credits-meter {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+
+.credits-meter-used {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* The rest of the month at the current pace. */
+.credits-meter-projected {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--accent-bg) 0 4px,
+    transparent 4px 8px
+  );
+  border-left: 2px solid var(--bg-raised);
+}
+
+.credits-kinds {
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.credits-kinds th {
+  text-align: left;
+  font-weight: 400;
+  padding: 2px var(--space-4) 2px 0;
+}
+
+.credits-kinds td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
+}
+
+.credits-days {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.credits-day {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.credits-day:hover {
+  background: var(--bg-subtle);
+}
+
+.credits-day-bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--accent);
 }
 
 /* ---- League tabs ---- */
