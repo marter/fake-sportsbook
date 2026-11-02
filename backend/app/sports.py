@@ -14,11 +14,14 @@ class PropMarket:
     kind: str  # "over_under" (Over/Under a line) or "yes" (a single Yes price, e.g. anytime TD)
 
 
-# Each prop market costs 1 API credit per game fetched. On the free plan we offer two for the
-# NFL; on a paid tier, add more here (e.g. player_rush_yds, player_reception_yds).
+# Each prop market costs 1 API credit per game fetched (4 per NFL game). Props are fetched only
+# when someone opens a game, so this fits the free plan at current traffic; re-check with
+# deploy/props-health.sql before adding more.
 NFL_PROPS = (
     PropMarket("player_anytime_td", "Anytime touchdown", "anytime TD", "yes"),
     PropMarket("player_pass_yds", "Passing yards", "pass yds", "over_under"),
+    PropMarket("player_rush_yds", "Rushing yards", "rush yds", "over_under"),
+    PropMarket("player_reception_yds", "Receiving yards", "rec yds", "over_under"),
 )
 
 

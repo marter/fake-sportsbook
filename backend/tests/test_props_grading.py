@@ -36,6 +36,10 @@ def test_parse_real_box_score() -> None:
     assert box.stat("player_anytime_td", "Daniel Jones") == 1  # a rushing TD; passing doesn't count
     assert box.stat("player_anytime_td", "Treylon Burks") == 1  # receiving TD
     assert box.stat("player_pass_yds", "Athan Kaliakmanis") == 186
+    assert box.stat("player_rush_yds", "Jonathan Taylor") == 95
+    assert box.stat("player_reception_yds", "Jonathan Taylor") == 2
+    assert box.stat("player_reception_yds", "Dyami Brown") == 65
+    assert box.stat("player_rush_yds", "Dyami Brown") == 0  # played, no carries
     assert box.stat("player_pass_yds", "Patrick Mahomes") is None  # not in this game
 
 

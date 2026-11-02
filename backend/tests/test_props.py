@@ -35,13 +35,18 @@ def prop_fetches(db: Session) -> int:
     return db.scalar(count) or 0
 
 
-def test_props_load_once_with_both_markets(
+def test_props_load_once_with_all_markets(
     client: TestClient, db: Session, auth_headers: dict[str, str]
 ) -> None:
     game = nfl_game(client, auth_headers, db)
     body = props(client, auth_headers, game.id)
     assert body["unavailable_reason"] is None
-    assert [m["key"] for m in body["markets"]] == ["player_anytime_td", "player_pass_yds"]
+    assert [m["key"] for m in body["markets"]] == [
+        "player_anytime_td",
+        "player_pass_yds",
+        "player_rush_yds",
+        "player_reception_yds",
+    ]
 
     by_market: dict[str, list[dict]] = {}
     for line in body["lines"]:
@@ -51,6 +56,9 @@ def test_props_load_once_with_both_markets(
     pass_yds = by_market["player_pass_yds"]
     assert {line["outcome"] for line in pass_yds} == {"Over", "Under"}
     assert len({line["participant"] for line in pass_yds}) == 2  # one QB per team
+    rush_yds = by_market["player_rush_yds"]
+    assert len({line["participant"] for line in rush_yds}) == 2  # one RB per team
+    assert by_market["player_reception_yds"]
 
     props(client, auth_headers, game.id)
     assert prop_fetches(db) == 1  # fetched once, then served from the database

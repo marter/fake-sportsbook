@@ -107,10 +107,17 @@ def fixture_props(sport: Sport, game: Game) -> dict[str, Any]:
         players = roster.get(team, [])
         for i, player in enumerate(players):
             seed = int(hashlib.sha256(f"{game.external_id}:{player}".encode()).hexdigest(), 16)
-            if i == 0 and "player_pass_yds" in outcomes:  # the first listed player is the QB
-                line = 175.5 + seed % 100
+            # Rosters list the QB, then the RB, then receivers.
+            market, line = (
+                ("player_pass_yds", 175.5 + seed % 100)
+                if i == 0
+                else ("player_rush_yds", 45.5 + seed % 40)
+                if i == 1
+                else ("player_reception_yds", 30.5 + seed % 45)
+            )
+            if market in outcomes:
                 for side in ("Over", "Under"):
-                    outcomes["player_pass_yds"].append(
+                    outcomes[market].append(
                         {"name": side, "description": player, "price": -112, "point": line}
                     )
             if "player_anytime_td" in outcomes:
