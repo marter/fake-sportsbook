@@ -1,6 +1,7 @@
 # Player props: plan
 
-Status: shipped Oct 13, 2026 (#21): NFL Anytime TD and Passing yards. Health check: `deploy/props-health.sql`.
+Status: shipped Oct 13, 2026 (#21): NFL Anytime TD and Passing yards; Rushing and Receiving
+yards added Nov 2 after the health check below. Health check: `deploy/props-health.sql`.
 
 Player props are bets on one player's stats rather than the game result, e.g.
 "Jalen Hurts over 186.5 passing yards" or "Travis Kelce scores a touchdown (anytime)".
@@ -23,7 +24,8 @@ it can change without notice) has full box scores:
 
 ## Markets (start small: NFL only)
 
-**Decision (Oct 10): two markets on the free plan, Anytime TD and Passing yards** (2 credits
+**Decision (Oct 10): two markets on the free plan, Anytime TD and Passing yards; Nov 2:
+all four, since props cost far fewer credits than estimated (see the health check)** (2 credits
 per game, ~130/month). Adding more later is a one-line change to `NFL_PROPS` in
 `backend/app/sports.py`, e.g. after moving to the ~$30/month API tier.
 
@@ -97,3 +99,4 @@ Run with `deploy/props-health.sql`.
   started yet. Nothing is stuck past the 12h grace period, there are no voids (no sign of
   name-matching misses), and the worker logged no ESPN or props errors.
 - Traffic is low, so this is a small sample. Run it again after a busy NFL week.
+- **Decision:** add Rushing and Receiving yards (4 credits per opened game).
