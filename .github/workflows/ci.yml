@@ -88,4 +88,13 @@ jobs:
         if: steps.check.outputs.configured == 'true'
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-        run: deploy/deploy.sh
+        # Deploys run one at a time, but a run that waited its turn would otherwise ship its
+        # older commit over a newer one already deployed (deploy.sh rsyncs with --delete).
+        # Only the commit at the tip of main deploys; the newer run deploys everything.
+        run: |
+          latest=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$latest" != "$GITHUB_SHA" ]; then
+            echo "::notice::Skipping deploy: main has moved on to ${latest:0:7}, whose run deploys it."
+            exit 0
+          fi
+          deploy/deploy.sh
