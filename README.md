@@ -83,19 +83,23 @@ npm run dev
   15 minutes it runs the same cached checks as page loads, so odds refresh once a day and bets
   settle soon after games end even if nobody opens the app. It only spends credits when those
   checks are due. Score checks stop for a game with no final score 24h after kickoff (it's
-  listed under "Needs attention" on the admin page for voiding) and pause when fewer than 50
-  API credits are left.
+  listed under "Needs attention" on the admin page for voiding).
 - **Parlays**: a bet has 1–8 legs (one is a single, two or more a parlay), one pick per game.
   Payout multiplies the legs' decimal odds exactly (`services/odds_math.py`, mirrored in the
   frontend with BigInt). Legs are graded as their games finish; a parlay loses as soon as any
   leg loses, a pushed leg drops out, and it pays once every leg is graded. The bet slip is
   app-wide state (`frontend/src/betslip/`), so picks survive switching league tabs.
 - **Settlement**: also on demand. Loading bets or games checks whether any open bet is
-  waiting on a game that kicked off over `GAME_DURATION_MINUTES` (180) ago; if so, it calls
-  the scores endpoint (2 credits) at most every `SCORES_MIN_INTERVAL_MINUTES` (30), records
-  final scores, grades legs, and pays winners / refunds pushes through the ledger. A
-  settlement-wide advisory lock plus row locks on open bets mean a bet is paid exactly once.
-  Force a run with `python -m app.cli settle`.
+  waiting on a game that should be over (by its sport's typical length in `app/sports.py`);
+  if so, it checks scores at most every `SCORES_MIN_INTERVAL_MINUTES` (30), records final
+  scores, grades legs, and pays winners / refunds pushes through the ledger. Scores come from
+  ESPN's free public scoreboard (`services/espn.py`, no credits; matched by teams and start
+  time, with `TEAM_ALIASES` for names that differ). The Odds API's scores endpoint
+  (2 credits) is only a fallback: when ESPN is down, or still doesn't list a game 3 hours
+  after it should have ended, at most every `SCORES_FALLBACK_HOURS` (3) per sport, and not
+  under 50 credits left. `SCORES_SOURCE=odds_api` switches back to the Odds API entirely.
+  A settlement-wide advisory lock plus row locks on open bets mean a bet is paid exactly
+  once. Force a run with `python -m app.cli settle`.
 - **No API key?** With `ODDS_API_KEY` unset, odds load from `backend/fixtures/nfl_odds.json`,
   shifted so the games are always in the near future.
 - **Force a refresh**: `docker compose exec backend python -m app.services.odds`

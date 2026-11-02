@@ -90,3 +90,16 @@ def in_season_sports(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(
         odds, "fetch_active_sport_keys", lambda: frozenset(s.api_key for s in SPORTS)
     )
+
+
+@pytest.fixture(autouse=True)
+def espn_offline(monkeypatch: pytest.MonkeyPatch):
+    """Never call ESPN from tests: it's unreachable unless a test fakes `espn.fetch_espn`."""
+    import httpx
+
+    from app.services import espn
+
+    def offline(path: str, params: dict[str, str]):
+        raise httpx.ConnectError("ESPN is offline in tests")
+
+    monkeypatch.setattr(espn, "fetch_espn", offline)

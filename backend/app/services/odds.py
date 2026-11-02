@@ -321,13 +321,13 @@ def upsert_lines(
             )
 
 
-def latest_fetch(db: Session, sport_key: str, kind: str = "odds") -> OddsFetch | None:
-    return db.scalars(
-        select(OddsFetch)
-        .where(OddsFetch.sport_key == sport_key, OddsFetch.kind == kind)
-        .order_by(OddsFetch.fetched_at.desc())
-        .limit(1)
-    ).first()
+def latest_fetch(
+    db: Session, sport_key: str, kind: str = "odds", source: str | None = None
+) -> OddsFetch | None:
+    query = select(OddsFetch).where(OddsFetch.sport_key == sport_key, OddsFetch.kind == kind)
+    if source is not None:
+        query = query.where(OddsFetch.source == source)
+    return db.scalars(query.order_by(OddsFetch.fetched_at.desc()).limit(1)).first()
 
 
 def ensure_fresh_odds(db: Session, sport: Sport, *, force: bool = False) -> OddsFetch | None:
